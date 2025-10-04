@@ -3,7 +3,10 @@ package com.example.ezwordmaster
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.ezwordmaster.ui.intro.IntroScreen
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.navigation.compose.rememberNavController
+import com.example.ezwordmaster.ui.navigation.AppNavHost
 import com.example.ezwordmaster.ui.theme.EzWordMasterTheme
 
 class MainActivity : ComponentActivity() {
@@ -11,7 +14,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EzWordMasterTheme {
-                IntroScreen()  // Màn hình intro đầu tiên
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    val navController = rememberNavController()
+                    AppNavHost(navController = navController)
+                }
             }
         }
     }
