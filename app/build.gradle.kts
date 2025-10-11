@@ -60,4 +60,5 @@ dependencies {
     //
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("androidx.compose.animation:animation:1.6.0")
 }

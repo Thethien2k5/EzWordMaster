@@ -1,68 +1,153 @@
 package com.example.ezwordmaster.domain.repository
 
 import android.content.Context
+import android.util.Log
 import com.example.ezwordmaster.domain.model.Topic
+import com.example.ezwordmaster.domain.model.Word
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import android.util.Log
 import java.io.File
-import com.example.ezwordmaster.domain.model.Word
 
 class TopicRepository(private val context: Context) {
-    // "context.filesDi" thư mục riêng tư của app Androi
-    //Cho androi studio ( phải máy ảo trước )
-    // 4 Gạch góc trên -> View -> Tool Windows -> Device Explorer ( dưới máy ảo sẽ xuất hiện Device Explorer )
-    // data/data/com.example.ezwordmaster/files/topocs.json
+
     private val FILE_NAME = "topics.json"
-    // tạo file topics.json nếu chưa có
+    private val json = Json { prettyPrint = true }
+
+    // Đường dẫn tới file topics.json trong thư mục riêng của app
+    private fun getTopicsFile(): File = File(context.filesDir, FILE_NAME)
+
+    // Kiểm tra file có tồn tại không
+    fun isTopicsFileExists(): Boolean {
+        val exists = getTopicsFile().exists()
+        Log.d("TopicRepo", "File tồn tại: $exists")
+        return exists
+    }
+
+    //  Tạo file mặc định nếu chưa có
     fun createTopicsFileIfMissing() {
-        try {
-            val file = File(context.filesDir, FILE_NAME)
-            if (!file.exists()) {
-                val defaultTopics = listOf(
-                    Topic(
-                        id = "0",
-                        name = "Welcome to Ez Word Master",
-                        words = listOf(
-                            Word("Hello", "Xin chào"),
-                            Word("Hi", "Xin chào"),
-                            Word("Welcome", "Chào mừng")
-                        )
+        val file = getTopicsFile()
+        if (!file.exists()) {
+            val defaultTopics = listOf(
+                Topic(
+                    id = "1",
+                    name = "Learning environment",
+                    words = listOf(
+                        Word("Student", "Học sinh"),
+                        Word("Teacher", "Giáo viên"),
+                        Word("Classroom", "Lớp học"),
+                        Word("School", "Trường học"),
+                        Word("Homework", "Bài tập về nhà"),
+                        Word("Exam", "Kỳ thi"),
+                        Word("Test", "Bài kiểm tra"),
+                        Word("Grade", "Điểm số"),
+                        Word("Subject", "Môn học"),
+                        Word("Lesson", "Bài học"),
+                        Word("Book", "Sách"),
+                        Word("Notebook", "Vở ghi"),
+                        Word("Pen", "Bút mực"),
+                        Word("Pencil", "Bút chì"),
+                        Word("Eraser", "Cục tẩy"),
+                        Word("Ruler", "Thước kẻ"),
+                        Word("Bag", "Cặp sách"),
+                        Word("Uniform", "Đồng phục"),
+                        Word("Break", "Giờ giải lao"),
+                        Word("Lunch", "Bữa trưa"),
+                        Word("Library", "Thư viện"),
+                        Word("Laboratory", "Phòng thí nghiệm"),
+                        Word("Playground", "Sân chơi"),
+                        Word("Friend", "Bạn bè"),
+                        Word("Classmate", "Bạn cùng lớp"),
+                        Word("Principal", "Hiệu trưởng"),
+                        Word("Study", "Học tập"),
+                        Word("Learn", "Học hỏi"),
+                        Word("Teach", "Dạy"),
+                        Word("Read", "Đọc"),
+                        Word("Write", "Viết"),
+                        Word("Calculate", "Tính toán"),
+                        Word("Remember", "Ghi nhớ"),
+                        Word("Understand", "Hiểu"),
+                        Word("Practice", "Luyện tập"),
+                        Word("Project", "Dự án"),
+                        Word("Presentation", "Bài thuyết trình"),
+                        Word("Group", "Nhóm"),
+                        Word("Teamwork", "Làm việc nhóm"),
+                        Word("Knowledge", "Kiến thức")
                     )
                 )
-
-                val jsonString = Json.encodeToString(defaultTopics)
-                file.writeText(jsonString)
-                Log.d("TopicInit", "Đã tạo file topics.json với dữ liệu mặc định")
-            } else {
-                Log.d("TopicInit", "File topics.json đã tồn tại, không cần tạo lại")
-            }
-        } catch (e: Exception) {
-            Log.e("TopicInit", "Lỗi khi tạo file: ${e.message}", e)
+            )
+            saveTopics(defaultTopics)
+            Log.d("TopicRepo", "Đã tạo file topics.json mặc định")
         }
     }
 
+    // Đọc dữ liệu từ file
     fun loadTopics(): List<Topic> {
-        val topicRepo = TopicRepository(context)
-        topicRepo.createTopicsFileIfMissing()
+        createTopicsFileIfMissing()
+        val file = getTopicsFile()
 
-        // tạo đt file trỏ đến FILE_NAME
-        val file = File(context.filesDir, FILE_NAME)
-        try {
-            // đọc file và trả về
+        return try {
             val jsonString = file.readText()
-            return Json.decodeFromString(jsonString) //giải mã json
-        }catch(e: Exception)
-        {
-            return emptyList() // trả về list rỗng khi lỗi (k tìm thấy file/ k đọc được file )
+            json.decodeFromString(jsonString)
+        } catch (e: Exception) {
+            Log.e("TopicRepo", "Lỗi đọc file: ${e.message}")
+            emptyList()
         }
     }
 
-    fun saveTopics(topics: List<Topic>) {
-        // mã hóa list thành json và lưu vào file
-        val jsonString = Json.encodeToString(topics)
-        val file = File(context.filesDir, FILE_NAME)
-        file.writeText(jsonString)
+    // Ghi đè toàn bộ danh sách (chỉ dùng nội bộ)
+    private fun saveTopics(topics: List<Topic>) {
+        try {
+            val jsonString = json.encodeToString(topics)
+            getTopicsFile().writeText(jsonString)
+            Log.d("TopicRepo", "Đã lưu ${topics.size} topics vào file.")
+        } catch (e: Exception) {
+            Log.e("TopicRepo", " Lỗi khi ghi file: ${e.message}")
+        }
+    }
+
+    //  Thêm hoặc cập nhật một topic (thông minh)
+    fun addOrUpdateTopic(newTopic: Topic) {
+        val currentTopics = loadTopics().toMutableList()
+        val existing = currentTopics.find {
+            it.id == newTopic.id || it.name.equals(newTopic.name, ignoreCase = true)
+        }
+
+        if (existing == null) {
+            //  Nếu chưa tồn tại → thêm mới
+            currentTopics.add(newTopic)
+            Log.d("TopicRepo", "Đã thêm chủ đề mới: ${newTopic.name}")
+        } else {
+            // Kiểm tra danh sách từ có giống hệt không
+            val sameWords = existing.words.size == newTopic.words.size &&
+                    existing.words.containsAll(newTopic.words)
+
+            if (sameWords) {
+                Log.d("TopicRepo", "Chủ đề '${newTopic.name}' đã tồn tại và giống hệt, bỏ qua.")
+                return
+            } else {
+                // Cập nhật chủ đề (thay thế danh sách từ)
+                val index = currentTopics.indexOf(existing)
+                currentTopics[index] = newTopic
+                Log.d("TopicRepo", " Cập nhật chủ đề '${newTopic.name}' với danh sách từ mới.")
+            }
+        }
+
+        saveTopics(currentTopics)
+    }
+
+    // Kiểm tra trùng ID hoặc tên (public dùng cho form thêm chủ đề)
+    fun isTopicDuplicate(topic: Topic): Boolean {
+        val topics = loadTopics()
+        return topics.any {
+            it.id == topic.id || it.name.equals(topic.name, ignoreCase = true)
+        }
+    }
+
+    //  Xóa một topic theo id
+    fun deleteTopicById(id: String) {
+        val currentTopics = loadTopics().filterNot { it.id == id }
+        saveTopics(currentTopics)
+        Log.d("TopicRepo", "🗑 Đã xóa chủ đề có id=$id")
     }
 }
