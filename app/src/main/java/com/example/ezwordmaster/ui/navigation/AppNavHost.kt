@@ -1,27 +1,52 @@
 package com.example.ezwordmaster.ui.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.runtime.Composable
-import com.example.ezwordmaster.ui.screens.IntroScreen
+import com.example.ezwordmaster.ui.about.AboutScreen
+import com.example.ezwordmaster.ui.help.HelpScreen
+import com.example.ezwordmaster.ui.notification.NotificationScreen
 import com.example.ezwordmaster.ui.screens.HomeScreen
+import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.TopicManagementScreen
+import com.example.ezwordmaster.ui.settings.SettingsScreen
+import com.example.ezwordmaster.ui.translate.TranslateScreen
 
+object Routes {
+    const val INTRO = "intro"
+    const val HOME = "home"
+    const val TOPIC_MANAGEMENT = "topicmanagementscreen"
+    const val ABOUT = "about"
+    const val HELP = "help"
+    const val TRANSLATE = "translate"
+    const val SETTINGS = "settings"
+    const val NOTIFICATION = "notification"
+}
 
-// **** Định nghĩa đường đi giữa các trang *****
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController() //  tạo mặc định
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
-        startDestination = "intro"
+        startDestination = Routes.INTRO
     ) {
-        composable("intro") { IntroScreen(navController = navController) }
-        composable("home") { HomeScreen(navController = navController) }
-        composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
-
+        composable(Routes.INTRO) { IntroScreen(navController = navController) }
+        composable(Routes.HOME) { HomeScreen(navController = navController) }
+        composable(Routes.TOPIC_MANAGEMENT) { TopicManagementScreen(navController = navController) }
+        composable(Routes.ABOUT) { AboutScreen(navController = navController) }
+        composable(Routes.HELP) { HelpScreen(navController = navController) }
+        composable(Routes.TRANSLATE) { TranslateScreen(navController = navController) }
+        composable(Routes.SETTINGS) { SettingsScreen(navController = navController) }
+        composable(Routes.NOTIFICATION) { NotificationScreen(navController = navController) }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AppNavHostPreview() {
+    AppNavHost(navController = rememberNavController())
 }
