@@ -65,4 +65,9 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     implementation("androidx.navigation:navigation-compose:2.7.4")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    // Retrofit để gọi API
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+// Gson Converter để chuyển đổi JSON sang object Kotlin
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.mlkit:translate:17.0.2")
 }

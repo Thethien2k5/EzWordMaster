@@ -11,6 +11,7 @@ import com.example.ezwordmaster.ui.help.HelpScreen
 import com.example.ezwordmaster.ui.screens.HomeScreen
 import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.TopicManagementScreen
+import com.example.ezwordmaster.ui.translate.TranslateScreen
 
 /**
  * Quản lý tất cả các đường dẫn (route) trong ứng dụng.
@@ -53,6 +54,9 @@ fun AppNavHost(
         }
 
         // Các màn hình khác như Dịch, Cài đặt sẽ được thêm vào đây
+        composable(Routes.TRANSLATE) {
+            TranslateScreen(navController = navController)
+        }
     }
 }
 
