@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.settings
+package com.example.ezwordmaster.domain.repository
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -13,10 +13,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val settingsDataStore = SettingsDataStore(application)
 
     val notificationsEnabled = settingsDataStore.notificationsEnabledFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, true)
+        .stateIn(viewModelScope, SharingStarted.Companion.Lazily, true)
 
     val notificationInterval = settingsDataStore.notificationIntervalFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, SettingsDataStore.DEFAULT_INTERVAL)
+        .stateIn(viewModelScope, SharingStarted.Companion.Lazily, SettingsDataStore.Companion.DEFAULT_INTERVAL)
 
     fun onNotificationToggled(isEnabled: Boolean) {
         viewModelScope.launch {

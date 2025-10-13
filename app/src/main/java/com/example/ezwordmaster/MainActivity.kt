@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        // Handle the case where the user denies the permission
+        // Xử lý trường hợp người dùng từ chối cấp quyền
     }
 
     private fun askNotificationPermission() {

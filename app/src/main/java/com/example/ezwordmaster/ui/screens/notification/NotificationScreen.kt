@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.notification
+package com.example.ezwordmaster.ui.screens.notification
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -18,7 +18,6 @@ import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
-import com.example.ezwordmaster.ui.navigation.Routes
 
 data class NotificationSample(val title: String, val content: String, val time: String)
 val sampleNotifications = listOf(
@@ -38,9 +37,7 @@ fun NotificationScreen(navController: NavHostController) {
                     canNavigateBack = true,
                     onNavigateUp = { navController.popBackStack() },
                     onLogoClick = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = true }
-                        }
+                        navController.popBackStack()
                     }
                 )
             },

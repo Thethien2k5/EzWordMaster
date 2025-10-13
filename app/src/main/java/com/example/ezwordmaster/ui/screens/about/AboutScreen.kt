@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.about
+package com.example.ezwordmaster.ui.screens.about
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,7 +22,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
-import com.example.ezwordmaster.ui.navigation.Routes
 
 @Composable
 fun AboutScreen(navController: NavHostController) {
@@ -35,9 +34,7 @@ fun AboutScreen(navController: NavHostController) {
                     canNavigateBack = true,
                     onNavigateUp = { navController.popBackStack() },
                     onLogoClick = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = true }
-                        }
+                        navController.popBackStack()
                     }
                 )
             },
@@ -69,7 +66,7 @@ fun AboutScreen(navController: NavHostController) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Version 1.0.0\n\nDeveloped by [Tên của bạn/Nhóm của bạn]\n\nThis app is designed to help you learn new English words effectively through various methods like flashcards, quizzes, and daily notifications.\n\nThank you for using our application!",
+                        text = "Version 1.0.0\n\nDeveloped by HKT2\n\nThis app is designed to help you learn new English words effectively through various methods like flashcards, quizzes, and daily notifications.\n\nThank you for using our application!",
                         fontSize = 16.sp,
                         color = Color.DarkGray,
                         textAlign = TextAlign.Center,

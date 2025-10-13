@@ -1,10 +1,9 @@
-package com.example.ezwordmaster.ui.translate
+package com.example.ezwordmaster.domain.repository
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ezwordmaster.data.remote.DictionaryApi
-import com.example.ezwordmaster.data.remote.dto.WordInfoDto
-import com.google.mlkit.common.model.DownloadConditions
+import com.example.ezwordmaster.domain.model.WordInfoDto
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions

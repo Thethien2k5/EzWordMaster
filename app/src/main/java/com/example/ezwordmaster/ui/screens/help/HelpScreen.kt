@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.help
+package com.example.ezwordmaster.ui.screens.help
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,9 +22,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.domain.model.HelpItem
+import com.example.ezwordmaster.domain.repository.HelpViewModel
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
-import com.example.ezwordmaster.ui.navigation.Routes
 
 @Composable
 fun HelpScreen(
@@ -42,9 +42,7 @@ fun HelpScreen(
                     canNavigateBack = true,
                     onNavigateUp = { navController.popBackStack() },
                     onLogoClick = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = true }
-                        }
+                        navController.popBackStack()
                     }
                 )
             },

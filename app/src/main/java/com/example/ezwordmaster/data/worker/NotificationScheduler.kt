@@ -12,6 +12,7 @@ object NotificationScheduler {
 
     private const val WORK_TAG = "notification_work"
 
+    // Lập lịch thông báo định kỳ
     fun scheduleReminder(context: Context, intervalHours: Long) {
         val workManager = WorkManager.getInstance(context)
         val constraints = Constraints.Builder()
@@ -29,6 +30,7 @@ object NotificationScheduler {
         )
     }
 
+    // Hủy thông báo đã lập lịch
     fun cancelReminder(context: Context) {
         WorkManager.getInstance(context).cancelUniqueWork(WORK_TAG)
     }

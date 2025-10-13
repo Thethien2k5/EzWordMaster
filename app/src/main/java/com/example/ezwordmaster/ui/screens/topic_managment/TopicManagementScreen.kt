@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.screens
+package com.example.ezwordmaster.ui.screens.topic_managment
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -14,7 +14,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.lazy.LazyColumn

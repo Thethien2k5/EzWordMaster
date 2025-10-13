@@ -1,6 +1,6 @@
 package com.example.ezwordmaster.data.remote
 
-import com.example.ezwordmaster.data.remote.dto.WordInfoDto
+import com.example.ezwordmaster.domain.model.WordInfoDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 

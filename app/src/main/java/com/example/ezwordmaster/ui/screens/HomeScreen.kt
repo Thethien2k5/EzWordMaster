@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.common.AppBackground
-import com.example.ezwordmaster.ui.navigation.Routes
 
 @Composable
 fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int = 100) {
@@ -77,10 +76,10 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                     Text(text = "$progress/$total ", fontSize = 12.sp, color = Color.Black)
                 }
 
-                MenuImageButton(R.drawable.topic) { navController.navigate(Routes.TOPIC_MANAGEMENT) }
+                MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }
                 MenuImageButton(R.drawable.practice) { /* TODO */ }
                 MenuImageButton(R.drawable.quiz) { /* TODO */ }
-                MenuImageButton(R.drawable.translate) { navController.navigate(Routes.TRANSLATE) }
+                MenuImageButton(R.drawable.translate) { navController.navigate("translate") }
                 MenuImageButton(R.drawable.ranking) { /* TODO */ }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -94,14 +93,14 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                         contentDescription = "Help",
                         modifier = Modifier
                             .size(32.dp)
-                            .clickable { navController.navigate(Routes.HELP) }
+                            .clickable { navController.navigate("help") }
                     )
                     Image(
                         painter = painterResource(id = R.drawable.ic_info),
                         contentDescription = "Info",
                         modifier = Modifier
                             .size(32.dp)
-                            .clickable { navController.navigate(Routes.ABOUT) }
+                            .clickable { navController.navigate("about") }
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -119,14 +118,14 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                     contentDescription = "Settings",
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable { navController.navigate(Routes.SETTINGS) }
+                        .clickable { navController.navigate("settings") }
                 )
                 Image(
                     painter = painterResource(id = R.drawable.ic_bell),
                     contentDescription = "Notifications",
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable { navController.navigate(Routes.NOTIFICATION) }
+                        .clickable { navController.navigate("notification") }
                 )
             }
         }

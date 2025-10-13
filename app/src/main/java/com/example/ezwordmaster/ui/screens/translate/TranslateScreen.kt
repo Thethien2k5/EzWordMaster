@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.translate
+package com.example.ezwordmaster.ui.screens.translate
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.ezwordmaster.data.remote.dto.WordInfoDto
+import com.example.ezwordmaster.domain.model.WordInfoDto
+import com.example.ezwordmaster.domain.repository.TranslateViewModel
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
-import com.example.ezwordmaster.ui.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +49,7 @@ fun TranslateScreen(
                     canNavigateBack = true,
                     onNavigateUp = { navController.popBackStack() },
                     onLogoClick = {
-                        navController.navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true } }
+                        navController.popBackStack()
                     }
                 )
             },

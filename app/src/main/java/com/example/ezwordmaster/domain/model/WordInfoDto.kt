@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.data.remote.dto
+package com.example.ezwordmaster.domain.model
 
 // Các class này khớp với cấu trúc JSON mà API trả về
 data class WordInfoDto(
