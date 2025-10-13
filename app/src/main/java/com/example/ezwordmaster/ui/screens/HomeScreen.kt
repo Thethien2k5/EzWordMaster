@@ -22,6 +22,7 @@ import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.common.AppBackground
 import androidx.compose.ui.draw.clip
 import com.example.ezwordmaster.domain.repository.TopicRepository
+import com.example.ezwordmaster.ui.navigation.Routes // <-- ***** THÊM DÒNG NÀY *****
 
 @Composable
 fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int = 100) {
@@ -59,7 +60,7 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                             fontSize = 16.sp,
                             color = Color.Black,
 
-                        )
+                            )
 
                         Text(
                             text = "${(progress.toFloat() / total * 100).toInt()}%",
@@ -94,10 +95,10 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
 
                 // Các nút chức năng (dùng ảnh nguyên khối)
                 MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }
-                MenuImageButton(R.drawable.practice) { navController.navigate("practice") }
-                MenuImageButton(R.drawable.quiz) { navController.navigate("quiz") }
-                MenuImageButton(R.drawable.translate) { navController.navigate("translate") }
-                MenuImageButton(R.drawable.ranking) { navController.navigate("ranking") }
+                MenuImageButton(R.drawable.practice) { /* navController.navigate("practice") */ }
+                MenuImageButton(R.drawable.quiz) { /* navController.navigate("quiz") */ }
+                MenuImageButton(R.drawable.translate) { /* navController.navigate(Routes.TRANSLATE) */ } // Sẽ làm sau
+                MenuImageButton(R.drawable.ranking) { /* navController.navigate("ranking") */ }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -108,17 +109,19 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_help),
-                        contentDescription = "Settings",
+                        contentDescription = "Help", // <-- Sửa lại cho đúng
                         modifier = Modifier
                             .size(32.dp)
-                            .clickable { /* TODO */ }
+                            // ***** THAY ĐỔI Ở ĐÂY *****
+                            .clickable { navController.navigate(Routes.HELP) }
                     )
                     Image(
                         painter = painterResource(id = R.drawable.ic_info),
                         contentDescription = "Info",
                         modifier = Modifier
                             .size(32.dp)
-                            .clickable { /* TODO */ }
+                            // ***** THAY ĐỔI Ở ĐÂY *****
+                            .clickable { navController.navigate(Routes.ABOUT) }
                     )
                 }
 
@@ -138,7 +141,7 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                     contentDescription = "Settings",
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable { /* TODO */ }
+                        .clickable { /* navController.navigate(Routes.SETTINGS) */ } // Sẽ làm sau
                 )
                 Image(
                     painter = painterResource(id = R.drawable.ic_bell),

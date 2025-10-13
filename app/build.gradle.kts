@@ -61,4 +61,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("androidx.compose.animation:animation:1.6.0")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
