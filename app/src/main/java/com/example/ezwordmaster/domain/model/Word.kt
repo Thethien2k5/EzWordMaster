@@ -7,3 +7,4 @@ data class Word(
     val meaning: String? = null, // nghĩa
     val example: String? = null // Ví dụ
 )
+
