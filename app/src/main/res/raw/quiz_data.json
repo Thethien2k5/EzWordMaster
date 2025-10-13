@@ -1,0 +1,28 @@
+[
+  {
+    "question": "happy",
+    "options": ["sad", "joyful", "angry", "tired"],
+    "answer": "joyful"
+  },
+  {
+    "question": "quick",
+    "options": ["rapid", "slow", "late", "lazy"],
+    "answer": "rapid"
+  },
+  {
+    "question": "cold",
+    "options": ["warm", "freeze", "ice", "snow"],
+    "answer": "warm"
+  },
+  {
+    "question": "big",
+    "options": ["large", "small", "tiny", "little"],
+    "answer": "large"
+  },
+  {
+    "question": "beautiful",
+    "options": ["pretty", "ugly", "bad", "wrong"],
+    "answer": "pretty"
+  }
+]
+

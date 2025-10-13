@@ -1,8 +1,7 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
-    id("kotlinx-serialization")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -21,8 +20,8 @@ android {
         compose = true
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     compileOptions {
@@ -30,12 +29,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-}
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 
-kotlin {
-    jvmToolchain(17)
 }
-
 
 dependencies {
     // Compose BOM
@@ -61,4 +59,12 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("androidx.compose.animation:animation:1.6.0")
+
+    // Lifecycle & ViewModel
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+
+    // Coroutines (optional for async operations)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }

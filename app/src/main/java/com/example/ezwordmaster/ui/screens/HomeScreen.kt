@@ -94,10 +94,11 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
 
                 // Các nút chức năng (dùng ảnh nguyên khối)
                 MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }
-                MenuImageButton(R.drawable.practice) { navController.navigate("practice") }
-                MenuImageButton(R.drawable.quiz) { navController.navigate("quiz") }
-                MenuImageButton(R.drawable.translate) { navController.navigate("translate") }
-                MenuImageButton(R.drawable.ranking) { navController.navigate("ranking") }
+                // Điều hướng tới Quiz Setting trước khi làm bài
+                MenuImageButton(R.drawable.practice) { /* TODO: practice */ }
+                MenuImageButton(R.drawable.quiz) { navController.navigate("quiz_setting") }
+                MenuImageButton(R.drawable.translate) { /* TODO: translate */ }
+                MenuImageButton(R.drawable.ranking) { /* TODO: ranking */ }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
