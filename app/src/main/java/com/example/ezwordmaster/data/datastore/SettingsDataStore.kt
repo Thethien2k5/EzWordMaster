@@ -1,5 +1,5 @@
 package com.example.ezwordmaster.data.datastore
-
+// Lưu trạng cài đặt tắt/ bật thông báo
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

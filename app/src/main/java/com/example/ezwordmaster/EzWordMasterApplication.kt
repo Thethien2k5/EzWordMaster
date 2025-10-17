@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.os.Build
 import com.example.ezwordmaster.worker.NotificationWorker
 
+//
 class EzWordMasterApplication : Application() {
     override fun onCreate() {
         super.onCreate()
@@ -14,9 +15,9 @@ class EzWordMasterApplication : Application() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "EzWordMaster Reminders"
-            val descriptionText = "Notifications for learning new words"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val name = "EzWordMaster"
+            val descriptionText = "Thông báo học từ mới" // Mô tả channel
+            val importance = NotificationManager.IMPORTANCE_DEFAULT // Mức độ ưu tiên
             val channel = NotificationChannel(NotificationWorker.CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }

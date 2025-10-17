@@ -13,7 +13,7 @@ import com.example.ezwordmaster.ui.screens.HomeScreen
 import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
-import com.example.ezwordmaster.ui.screens.translate.TranslateScreen
+//import com.example.ezwordmaster.ui.screens.translate.TranslateScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController()
@@ -27,7 +27,7 @@ fun AppNavHost(
         composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }
-        composable("translate") { TranslateScreen(navController = navController) }
+//        composable("translate") { TranslateScreen(navController = navController) }
         composable("settings") { SettingsScreen(navController = navController) }
         composable("notification") { NotificationScreen(navController = navController) }
     }
