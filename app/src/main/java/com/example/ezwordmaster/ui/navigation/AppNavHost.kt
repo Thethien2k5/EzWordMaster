@@ -1,7 +1,6 @@
 package com.example.ezwordmaster.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +12,8 @@ import com.example.ezwordmaster.ui.screens.HomeScreen
 import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
+import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
+
 //import com.example.ezwordmaster.ui.screens.translate.TranslateScreen
 @Composable
 fun AppNavHost(
@@ -29,12 +30,14 @@ fun AppNavHost(
         composable("help") { HelpScreen(navController = navController) }
 //        composable("translate") { TranslateScreen(navController = navController) }
         composable("settings") { SettingsScreen(navController = navController) }
-        composable("notification") { NotificationScreen(navController = navController) }
-    }
-}
+        composable("notificationscreen") { NotificationScreen(navController = navController) }
 
-@Preview(showBackground = true)
-@Composable
-fun AppNavHostPreview() {
-    AppNavHost(navController = rememberNavController())
+//        composable("edittopic") { EditTopicScreen(navController = navController) }
+        composable("edittopic/{topicId}") { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            EditTopicScreen(navController = navController, topicId = topicId)
+        }
+
+
+    }
 }
