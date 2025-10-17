@@ -16,12 +16,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.common.AppBackground
 
+//@Composable
+//@Preview(
+//    name = "Màn hình chính",
+//    showBackground = true,
+//    showSystemUi = false,
+//    widthDp = 365,
+//    heightDp = 815
+//)
+//fun PreviewDSS() {
+//    HomeScreen(navController = rememberNavController(), progress = 75, total = 100)
+//}
 @Composable
 fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int = 100) {
     AppBackground {
@@ -79,8 +92,19 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                 MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }
                 MenuImageButton(R.drawable.practice) { /* TODO */ }
                 MenuImageButton(R.drawable.quiz) { /* TODO */ }
-                MenuImageButton(R.drawable.translate) { navController.navigate("translate") }
+//                MenuImageButton(R.drawable.translate) { navController.navigate("translate") }
                 MenuImageButton(R.drawable.ranking) { /* TODO */ }
+                Image(
+                    painter = painterResource(R.drawable.translate),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp)
+                        .padding(vertical = 6.dp)
+                        .clickable { navController.navigate("translate") }
+                        .offset(y=(-14).dp),
+                    contentScale = ContentScale.FillBounds
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -144,4 +168,5 @@ fun MenuImageButton(imageRes: Int, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         contentScale = ContentScale.FillBounds
     )
+    Spacer(modifier = Modifier.height(12.dp))
 }
