@@ -36,6 +36,7 @@ import com.example.ezwordmaster.domain.model.Topic
 import com.example.ezwordmaster.ui.common.AppBackground
 import com.example.ezwordmaster.domain.repository.TopicRepository
 
+
 //@Composable
 //@Preview(
 //    name = "Màn hình chính",
@@ -200,8 +201,8 @@ fun ExpandableTopicItem(topic: Topic, navController: NavHostController) {
     val ROTATION by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
     Card(
-        modifier = Modifier.fillMaxWidth()
-            .animateContentSize(), // co giãn mượt
+        modifier = Modifier.fillMaxWidth(),
+//            .animateContentSize(), // co giãn mượt
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F5FF)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
