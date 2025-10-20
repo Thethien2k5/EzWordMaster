@@ -1,40 +1,47 @@
+// DÁN VÀ THAY THẾ TOÀN BỘ NỘI DUNG FILE NÀY
 package com.example.ezwordmaster.ui.settings
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ezwordmaster.data.datastore.SettingsDataStore
-import com.example.ezwordmaster.worker.NotificationScheduler
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val settingsDataStore = SettingsDataStore(application)
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val settingsDataStore: SettingsDataStore
+) : ViewModel() {
 
-    val notificationsEnabled = settingsDataStore.notificationsEnabledFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, true)
+    // Lấy trạng thái Chế độ tối từ DataStore
+    val isDarkMode = settingsDataStore.isDarkMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = false
+        )
 
-    val notificationInterval = settingsDataStore.notificationIntervalFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, SettingsDataStore.DEFAULT_INTERVAL)
+    // Lấy trạng thái Bật/tắt thông báo từ DataStore
+    val areNotificationsEnabled = settingsDataStore.notificationsEnabledFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = true
+        )
 
-    fun onNotificationToggled(isEnabled: Boolean) {
+    // Hàm này được gọi từ SettingsScreen
+    fun toggleDarkMode(isDark: Boolean) {
         viewModelScope.launch {
-            settingsDataStore.setNotificationsEnabled(isEnabled)
-            if (isEnabled) {
-                NotificationScheduler.scheduleReminder(getApplication(), notificationInterval.value)
-            } else {
-                NotificationScheduler.cancelReminder(getApplication())
-            }
+            settingsDataStore.setDarkMode(isDark)
         }
     }
 
-    fun onIntervalChanged(intervalHours: Long) {
+    // Hàm này được gọi từ SettingsScreen
+    fun toggleNotifications(isEnabled: Boolean) {
         viewModelScope.launch {
-            settingsDataStore.setNotificationInterval(intervalHours)
-            if (notificationsEnabled.value) {
-                NotificationScheduler.scheduleReminder(getApplication(), intervalHours)
-            }
+            settingsDataStore.setNotificationsEnabled(isEnabled)
         }
     }
 }

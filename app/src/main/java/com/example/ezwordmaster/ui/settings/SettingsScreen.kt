@@ -1,38 +1,36 @@
+// DÁN VÀ THAY THẾ TOÀN BỘ NỘI DUNG FILE NÀY
 package com.example.ezwordmaster.ui.settings
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
 import com.example.ezwordmaster.ui.navigation.Routes
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    viewModel: SettingsViewModel = viewModel()
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
-    val notificationInterval by viewModel.notificationInterval.collectAsState()
-    var isDropdownExpanded by remember { mutableStateOf(false) }
-    val intervalOptions = listOf(2L, 4L, 6L, 8L, 12L)
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val areNotificationsEnabled by viewModel.areNotificationsEnabled.collectAsState()
 
     GradientBackground {
         Scaffold(
             topBar = {
                 CommonTopAppBar(
-                    title = "Settings",
+                    title = "Cài Đặt",
                     canNavigateBack = true,
                     onNavigateUp = { navController.popBackStack() },
                     onLogoClick = {
@@ -48,69 +46,43 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White)
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Bật thông báo ôn tập", fontSize = 18.sp)
-                        Switch(
-                            checked = notificationsEnabled,
-                            onCheckedChange = { viewModel.onNotificationToggled(it) }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Divider()
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Gửi thông báo mỗi", fontSize = 18.sp)
-                        ExposedDropdownMenuBox(
-                            expanded = isDropdownExpanded,
-                            onExpandedChange = { isDropdownExpanded = !isDropdownExpanded }
-                        ) {
-                            OutlinedTextField(
-                                value = "$notificationInterval giờ",
-                                onValueChange = {},
-                                readOnly = true,
-                                trailingIcon = {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(
-                                        expanded = isDropdownExpanded
-                                    )
-                                },
-                                modifier = Modifier.menuAnchor()
-                            )
-                            ExposedDropdownMenu(
-                                expanded = isDropdownExpanded,
-                                onDismissRequest = { isDropdownExpanded = false }
-                            ) {
-                                intervalOptions.forEach { interval ->
-                                    DropdownMenuItem(
-                                        text = { Text("$interval giờ") },
-                                        onClick = {
-                                            viewModel.onIntervalChanged(interval)
-                                            isDropdownExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                SettingItem(
+                    title = "Chế độ tối",
+                    checked = isDarkMode,
+                    onCheckedChange = { viewModel.toggleDarkMode(it) }
+                )
+                Divider(color = Color.Gray.copy(alpha = 0.5f))
+                SettingItem(
+                    title = "Bật thông báo",
+                    checked = areNotificationsEnabled,
+                    onCheckedChange = { viewModel.toggleNotifications(it) }
+                )
+                Divider(color = Color.Gray.copy(alpha = 0.5f))
             }
         }
+    }
+}
+
+@Composable
+fun SettingItem(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = title, fontSize = 18.sp)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }

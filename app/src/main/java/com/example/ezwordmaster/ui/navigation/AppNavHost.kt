@@ -1,7 +1,7 @@
 package com.example.ezwordmaster.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,9 +27,7 @@ object Routes {
 }
 
 @Composable
-fun AppNavHost(
-    navController: NavHostController = rememberNavController()
-) {
+fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
         startDestination = Routes.INTRO
@@ -41,12 +39,13 @@ fun AppNavHost(
         composable(Routes.HELP) { HelpScreen(navController = navController) }
         composable(Routes.TRANSLATE) { TranslateScreen(navController = navController) }
         composable(Routes.SETTINGS) { SettingsScreen(navController = navController) }
-        composable(Routes.NOTIFICATION) { NotificationScreen(navController = navController) }
-    }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun AppNavHostPreview() {
-    AppNavHost(navController = rememberNavController())
+        // THAY ĐỔI: Inject ViewModel vào màn hình Notification
+        composable(Routes.NOTIFICATION) {
+            NotificationScreen(
+                navController = navController,
+                viewModel = hiltViewModel()
+            )
+        }
+    }
 }

@@ -19,9 +19,13 @@ class SettingsDataStore(context: Context) {
     companion object {
         val NOTIFICATIONS_ENABLED_KEY = booleanPreferencesKey("notifications_enabled")
         val NOTIFICATION_INTERVAL_KEY = longPreferencesKey("notification_interval")
+
+        val DARK_MODE_KEY = booleanPreferencesKey("dark_mode_enabled")
         const val DEFAULT_INTERVAL = 4L
     }
-
+    val isDarkMode: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[DARK_MODE_KEY] ?: false
+    }
     val notificationsEnabledFlow: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[NOTIFICATIONS_ENABLED_KEY] ?: true
     }
@@ -35,7 +39,11 @@ class SettingsDataStore(context: Context) {
             preferences[NOTIFICATIONS_ENABLED_KEY] = isEnabled
         }
     }
-
+    suspend fun setDarkMode(isEnabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[DARK_MODE_KEY] = isEnabled
+        }
+    }
     suspend fun setNotificationInterval(intervalHours: Long) {
         dataStore.edit { preferences ->
             preferences[NOTIFICATION_INTERVAL_KEY] = intervalHours
