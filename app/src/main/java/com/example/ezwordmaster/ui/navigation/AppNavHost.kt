@@ -1,11 +1,13 @@
 package com.example.ezwordmaster.ui.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.runtime.Composable
-import com.example.ezwordmaster.ui.screens.IntroScreen
+import com.example.ezwordmaster.ui.screens.about.AboutScreen
+import com.example.ezwordmaster.ui.screens.help.HelpScreen
+import com.example.ezwordmaster.ui.screens.notification.NotificationScreen
 import com.example.ezwordmaster.ui.screens.HomeScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.practice.PracticeScreen
@@ -17,11 +19,15 @@ import com.example.ezwordmaster.ui.screens.practice.FlipCardScreen
 import com.example.ezwordmaster.ui.screens.practice.FlipResultScreen
 import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
 
+import com.example.ezwordmaster.ui.screens.IntroScreen
+import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
+import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
+import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 
-// **** Định nghĩa đường đi giữa các trang *****
+//import com.example.ezwordmaster.ui.screens.translate.TranslateScreen
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController() //  tạo mặc định
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
@@ -34,6 +40,18 @@ fun AppNavHost(
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
         //danh sách chủ đề
         composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
+        composable("about") { AboutScreen(navController = navController) }
+        composable("help") { HelpScreen(navController = navController) }
+//        composable("translate") { TranslateScreen(navController = navController) }
+        composable("settings") { SettingsScreen(navController = navController) }
+        composable("notificationscreen") { NotificationScreen(navController = navController) }
+
+//        composable("edittopic") { EditTopicScreen(navController = navController) }
+        composable("edittopic/{topicId}") { backStackEntry ->
+            val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+            EditTopicScreen(navController = navController, topicId = topicId)
+        }
+
 
         //*** ======= ÔN TẬP ======= ***///
         // chọn chủ đề muốn ôn tập
