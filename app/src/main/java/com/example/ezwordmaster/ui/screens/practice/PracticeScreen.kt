@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.screens
+package com.example.ezwordmaster.ui.screens.practice
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -23,7 +23,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -36,36 +38,43 @@ import com.example.ezwordmaster.domain.repository.TopicRepository
 fun PracticeScreen(navController: NavHostController) {
     val context = LocalContext.current
     val repository = remember { TopicRepository(context) }
-    
+
     var topics by remember { mutableStateOf<List<Topic>>(emptyList()) }
     var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
     var showDropdown by remember { mutableStateOf(false) }
-    
+    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+
     // Tải chủ đề
     LaunchedEffect(Unit) {
         topics = repository.loadTopics()
     }
-    
+
     // Lọc và sắp xếp chủ đề
-    val filteredAndSortedTopics = remember(topics, filterSortType) {
+    val filteredAndSortedTopics = remember(topics, filterSortType, searchQuery) {
+        // 1. Lọc theo thanh tìm kiếm (tên chủ đề)
+        val searchedTopics = if (searchQuery.text.isNotBlank()) {
+            topics.filter {
+                it.name?.contains(searchQuery.text, ignoreCase = true) == true
+            }
+        } else {
+            topics
+        }
+
+        // 2. Sắp xếp danh sách đã lọc
         when (filterSortType) {
-            FilterSortType.ALL -> topics
-            FilterSortType.BY_TOPIC -> topics.filter { !it.category.isNullOrEmpty() }
-            FilterSortType.BY_OWNER -> topics.filter { !it.owner.isNullOrEmpty() }
-            FilterSortType.NEWEST -> topics.sortedByDescending { it.lastModified ?: it.createdDate ?: 0L }
-            FilterSortType.A_TO_Z -> topics.sortedBy { it.name ?: "" }
-            FilterSortType.WORD_COUNT -> topics.sortedByDescending { it.words.size }
+            FilterSortType.A_TO_Z -> searchedTopics.sortedBy { it.name ?: "" }
+            FilterSortType.WORD_COUNT -> searchedTopics.sortedByDescending { it.words.size }
+            else -> searchedTopics
         }
     }
-    
+
     val dropdownText = when (filterSortType) {
         FilterSortType.ALL -> "Tất cả"
-        FilterSortType.BY_TOPIC -> "Theo chủ đề"
-        FilterSortType.BY_OWNER -> "Theo người dùng"
-        FilterSortType.NEWEST -> "Mới nhất"
-        FilterSortType.A_TO_Z -> "A - Z"
-        FilterSortType.WORD_COUNT -> "Số lượng từ"
+        FilterSortType.A_TO_Z -> "Sắp xếp: A - Z"
+        FilterSortType.WORD_COUNT -> "Sắp xếp: Số lượng từ"
+        else -> "Tất cả"
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -83,7 +92,7 @@ fun PracticeScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-
+            // ... (Phần header, thanh tìm kiếm, dropdown không thay đổi)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -95,19 +104,36 @@ fun PracticeScreen(navController: NavHostController) {
                     tint = Color(0xFF4CAF50),
                     modifier = Modifier
                         .size(45.dp)
-                        .clickable { navController.popBackStack() }
+                        .clickable { navController.navigate("home") }
                 )
-                
-                // Logo ứng dụng
+
                 Image(
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = "App Logo",
                     modifier = Modifier.size(60.dp)
                 )
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Thanh tìm kiếm
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Tìm kiếm tên chủ đề...") },
+                singleLine = true,
+                shape = RoundedCornerShape(8.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Color(0xFF2196F3)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dropdown chọn kiểu sắp xếp
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -136,7 +162,7 @@ fun PracticeScreen(navController: NavHostController) {
                     )
                 }
             }
-            
+
             // Menu thả xuống
             if (showDropdown) {
                 Card(
@@ -145,12 +171,17 @@ fun PracticeScreen(navController: NavHostController) {
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
+                    val availableSortTypes = listOf(
+                        FilterSortType.ALL,
+                        FilterSortType.A_TO_Z,
+                        FilterSortType.WORD_COUNT
+                    )
                     Column(modifier = Modifier.padding(8.dp)) {
-                        FilterSortType.values().forEach { type ->
+                        availableSortTypes.forEach { type ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { 
+                                    .clickable {
                                         filterSortType = type
                                         showDropdown = false
                                     }
@@ -160,11 +191,9 @@ fun PracticeScreen(navController: NavHostController) {
                                 Text(
                                     text = when (type) {
                                         FilterSortType.ALL -> "Tất cả"
-                                        FilterSortType.BY_TOPIC -> "Theo chủ đề"
-                                        FilterSortType.BY_OWNER -> "Theo người dùng"
-                                        FilterSortType.NEWEST -> "Mới nhất"
-                                        FilterSortType.A_TO_Z -> "A - Z"
-                                        FilterSortType.WORD_COUNT -> "Số lượng từ"
+                                        FilterSortType.A_TO_Z -> "Sắp xếp: A - Z"
+                                        FilterSortType.WORD_COUNT -> "Sắp xếp: Số lượng từ"
+                                        else -> ""
                                     },
                                     fontSize = 14.sp,
                                     color = if (filterSortType == type) Color(0xFF2196F3) else Color.Black
@@ -174,7 +203,7 @@ fun PracticeScreen(navController: NavHostController) {
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
@@ -195,16 +224,16 @@ fun PracticeScreen(navController: NavHostController) {
                     color = Color.Black
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Danh sách chủ đề
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
                 items(filteredAndSortedTopics.filter { topic ->
-                    // Chỉ hiển thị thẻ khi có đủ thông tin
-                    !topic.name.isNullOrEmpty() && 
-                    !topic.owner.isNullOrEmpty() && 
-                    topic.words.isNotEmpty()
+                    !topic.name.isNullOrEmpty() &&
+                            topic.words.isNotEmpty()
                 }) { topic ->
                     TopicCard(
                         topic = topic,
@@ -226,7 +255,7 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
         targetValue = if (expanded) 180f else 0f,
         label = "rotation"
     )
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -236,34 +265,30 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
+            // SỬA Ở ĐÂY: Đã đơn giản hóa cấu trúc Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { 
-                        // Nhấn vào thẻ để chuyển đến WordPracticeScreen
+                    .clickable {
                         topic.id?.let { onTopicClick(it) }
                     }
                     .padding(20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = topic.name ?: "Không có tên",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = topic.owner ?: "Không có chủ sở hữu",
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
-                }
+                // Chỉ còn Text hiển thị tên chủ đề
+                Text(
+                    text = topic.name ?: "Không có tên",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f) // Giúp tên dài không đẩy các thành phần khác
+                )
 
+                // Phần hiển thị số lượng từ và icon không đổi
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 8.dp)
                 ) {
                     Text(
                         text = "${topic.words.size}",
@@ -278,13 +303,13 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
                         tint = Color.Black,
                         modifier = Modifier
                             .size(16.dp)
-                            .clickable { expanded = !expanded }
+                            .clickable(onClick = { expanded = !expanded })
                             .rotate(rotation)
                     )
                 }
             }
-            
-            // Danh sách từ vựng khi mở rộng
+
+            // Phần danh sách từ vựng khi mở rộng không thay đổi
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically() + fadeIn(),
@@ -298,7 +323,7 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
                         thickness = 1.dp,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    
+
                     topic.words.take(10).forEach { word ->
                         Text(
                             text = "• ${word.word}: ${word.meaning}",
@@ -307,13 +332,13 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
                     }
-                    
+
                     if (topic.words.size > 10) {
                         Text(
                             text = "... và ${topic.words.size - 10} từ khác",
                             fontSize = 12.sp,
                             color = Color.Gray,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontStyle = FontStyle.Italic,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }

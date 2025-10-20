@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.screens
+package com.example.ezwordmaster.ui.screens.practice
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

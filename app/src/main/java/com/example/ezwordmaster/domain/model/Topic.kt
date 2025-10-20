@@ -5,10 +5,5 @@ import kotlinx.serialization.Serializable
 data class Topic(
     val id: String? = null,
     val name: String? = null,
-    val words: List<Word>,
-    val owner: String? = null,           // Tên chủ sở hữu
-    val createdDate: Long? = null,        // Thời gian tạo (timestamp)
-    val lastModified: Long? = null,      // Thời gian sửa cuối (timestamp)
-    val category: String? = null,         // Danh mục
-    val description: String? = null        // Mô tả
+    val words: List<Word>
 )

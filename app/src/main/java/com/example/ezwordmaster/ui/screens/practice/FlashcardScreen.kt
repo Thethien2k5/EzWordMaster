@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.screens
+package com.example.ezwordmaster.ui.screens.practice
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -31,11 +30,26 @@ import com.example.ezwordmaster.domain.repository.TopicRepository
 import com.example.ezwordmaster.domain.repository.StudyResultRepository
 import kotlinx.coroutines.delay
 import java.util.UUID
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.alpha
 
+//import androidx.compose.ui.tooling.preview.Preview
+//import androidx.navigation.compose.rememberNavController
 enum class SwipeDirection {
     LEFT, RIGHT
 }
 
+//@Composable
+//@Preview(
+//    name = "Màn hình chính",
+//    showBackground = true,
+//    showSystemUi = false,
+//    widthDp = 365,
+//    heightDp = 815
+//)
+//fun PreviewDSS() {
+//    FlashcardScreen(navController = rememberNavController(), topicId = "1")
+//}
 @Composable
 fun FlashcardScreen(navController: NavHostController, topicId: String?) {
     val context = LocalContext.current
@@ -50,6 +64,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
     var isFlipped by remember { mutableStateOf(false) } // Trạng thái lật thẻ
     var swipeDirection by remember { mutableStateOf<SwipeDirection?>(null) } // Hướng vuốt hiện tại
     var startTime by remember { mutableStateOf(0L) } // Thời gian bắt đầu học
+    var meaningVisible by remember { mutableStateOf(false) } //Đảm bảo nghĩa luôn bị ẩn khi sang từ mới
 
     // Tải chủ đề theo ID và khởi tạo thời gian bắt đầu
     LaunchedEffect(topicId) {
@@ -74,7 +89,20 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
     // Đặt lại trạng thái lật và hướng vuốt khi chuyển sang từ tiếp theo
     LaunchedEffect(currentIndex) {
         isFlipped = false
+        meaningVisible = false
         swipeDirection = null
+    }
+
+    //kiểm soát việc hiển thị nghĩa
+    LaunchedEffect(isFlipped) {
+        if (isFlipped) {
+            // Khi lật để xem nghĩa, đợi nửa animation (300ms) rồi mới cho hiện
+            delay(300)
+            meaningVisible = true
+        } else {
+            // Khi lật lại, ẩn nghĩa ngay lập tức
+            meaningVisible = false
+        }
     }
 
     // Chuyển đến màn hình kết quả khi hoàn thành và lưu kết quả
@@ -93,7 +121,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                 learningWords = learningWords
             )
             studyResultRepository.addStudyResult(studyResult)
-            
+
             // Chuyển đến màn hình kết quả
             navController.navigate("result/$topicId/$knownWords/$learningWords")
         }
@@ -128,7 +156,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                     tint = Color(0xFF4CAF50),
                     modifier = Modifier
                         .size(45.dp)
-                        .clickable { navController.popBackStack() }
+                        .clickable { navController.navigate("practice")}
                 )
 
                 // Chỉ báo tiến độ
@@ -157,7 +185,22 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Huy hiệu từ đã biết
+
+                // Chư nhớ
+                Card(
+                    shape = CircleShape,
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF44336)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Text(
+                        text = "$learningWords",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+                // Đã nhớ
                 Card(
                     shape = CircleShape,
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50)),
@@ -172,20 +215,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                     )
                 }
 
-                // Huy hiệu từ đang học
-                Card(
-                    shape = CircleShape,
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF44336)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Text(
-                        text = "$learningWords",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
+
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -196,18 +226,25 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                     word = currentWord.word ?: "",
                     meaning = currentWord.meaning ?: "",
                     isFlipped = isFlipped,
+                    meaningVisible = meaningVisible,
                     swipeDirection = swipeDirection,
                     onFlip = { isFlipped = !isFlipped },
                     onSwipeLeft = {
                         // Vuốt trái - Đang học
                         swipeDirection = SwipeDirection.LEFT
                         learningWords++
+                        // Reset trạng thái NGAY LẬP TỨC trước khi chuyển từ
+                        isFlipped = false
+                        meaningVisible = false
                         currentIndex++
                     },
                     onSwipeRight = {
                         // Vuốt phải - Đã nhớ
                         swipeDirection = SwipeDirection.RIGHT
                         knownWords++
+                        // Reset trạng thái NGAY LẬP TỨC trước khi chuyển từ
+                        isFlipped = false
+                        meaningVisible = false
                         currentIndex++
                     }
                 )
@@ -228,12 +265,13 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.return_),
+                        painter = painterResource(id = R.drawable.ic_triangle),
                         contentDescription = "Previous",
                         tint = Color.White,
                         modifier = Modifier
                             .size(48.dp)
                             .padding(12.dp)
+                            .rotate(180f)
                             .clickable {
                                 if (currentIndex > 0) {
                                     currentIndex--
@@ -244,10 +282,11 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
 
                 // Văn bản hướng dẫn
                 Text(
-                    text = "Vuốt phải: đã nhớ\nVuốt trái: đang học\nNhấn thẻ: lật",
-                    fontSize = 12.sp,
+                    text = "Vuốt sang phải: đã nhớ\nVuốt sang trái: chưa nhớ\nNhấn để lật",
+                    fontSize = 17.sp,
                     color = Color.Black,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.offset(y = (-24).dp)
                 )
 
                 // Nút tiếp theo
@@ -282,6 +321,7 @@ fun AnimatedFlashcard(
     word: String,
     meaning: String,
     isFlipped: Boolean,
+    meaningVisible: Boolean,
     swipeDirection: SwipeDirection?,
     onFlip: () -> Unit,
     onSwipeLeft: () -> Unit,
@@ -296,31 +336,41 @@ fun AnimatedFlashcard(
     
     // Xác định màu viền dựa trên hướng vuốt
     val borderColor = when (swipeDirection) {
-        SwipeDirection.RIGHT -> Color(0xFF4CAF50) // Xanh lá cho "đã nhớ"
-        SwipeDirection.LEFT -> Color(0xFFF44336)  // Đỏ cho "đang học"
+        SwipeDirection.RIGHT -> Color(0xFF4CAF50)
+        SwipeDirection.LEFT -> Color(0xFFF44336)
         null -> Color.Transparent                 // Không có viền
     }
-    
+    // Biến để theo dõi tổng quãng đường vuốt theo chiều ngang
+    var offsetX by remember { mutableStateOf(0f) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1.2f)
             .pointerInput(Unit) {
                 detectDragGestures(
+                    onDragStart = {
+                        // Reset lại quãng đường khi bắt đầu vuốt
+                        offsetX = 0f
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        // Cộng dồn quãng đường vuốt ngang
+                        offsetX += dragAmount.x
+                    },
                     onDragEnd = {
-                        // Xử lý cử chỉ vuốt
+                        val swipeThreshold = 200f // Có thể tăng ngưỡng vuốt
+                        // Xử lý khi kết thúc vuốt
+                        if (offsetX > swipeThreshold) {
+                            // Vuốt đủ xa sang phải
+                            onSwipeRight()
+                        } else if (offsetX < -swipeThreshold) {
+                            // Vuốt đủ xa sang trái
+                            onSwipeLeft()
+                        }
+                        // Reset lại sau khi xử lý
+                        offsetX = 0f
                     }
-                ) { change, _ ->
-                    // Phát hiện hướng vuốt
-                    val swipeThreshold = 100f
-                    if (change.position.x - change.previousPosition.x > swipeThreshold) {
-                        // Vuốt phải - Đã nhớ
-                        onSwipeRight()
-                    } else if (change.position.x - change.previousPosition.x < -swipeThreshold) {
-                        // Vuốt trái - Đang học
-                        onSwipeLeft()
-                    }
-                }
+                )
             }
             .clickable { onFlip() }
             .graphicsLayer {
@@ -382,6 +432,7 @@ fun AnimatedFlashcard(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .fillMaxSize()
+                        .alpha(if (meaningVisible) 1f else 0f)
                         .graphicsLayer {
                             rotationY = 180f
                             if (rotation < 90f) {

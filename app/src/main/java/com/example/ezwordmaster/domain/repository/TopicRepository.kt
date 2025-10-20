@@ -32,11 +32,6 @@ class TopicRepository(private val context: Context) {
                 Topic(
                     id = "1",
                     name = "Learning environment",
-                    owner = "Default User",
-                    createdDate = System.currentTimeMillis() - 86400000 * 7, // 7 ngày trước
-                    lastModified = System.currentTimeMillis() - 86400000 * 2, // 2 ngày trước
-                    category = "Education",
-                    description = "Từ vựng về môi trường học tập",
                     words = listOf(
                         Word("Student", "Học sinh"),
                         Word("Teacher", "Giáo viên"),
@@ -83,11 +78,6 @@ class TopicRepository(private val context: Context) {
                 Topic(
                     id = "2",
                     name = "Food & Drinks",
-                    owner = "Alice Johnson",
-                    createdDate = System.currentTimeMillis() - 86400000 * 5, // 5 ngày trước
-                    lastModified = System.currentTimeMillis() - 86400000 * 1, // 1 ngày trước
-                    category = "Daily Life",
-                    description = "Từ vựng về đồ ăn và thức uống",
                     words = listOf(
                         Word("Apple", "Táo"),
                         Word("Banana", "Chuối"),
@@ -124,11 +114,6 @@ class TopicRepository(private val context: Context) {
                 Topic(
                     id = "3",
                     name = "Technology",
-                    owner = "Bob Smith",
-                    createdDate = System.currentTimeMillis() - 86400000 * 3, // 3 ngày trước
-                    lastModified = System.currentTimeMillis() - 86400000 * 0, // Hôm nay
-                    category = "Technology",
-                    description = "Từ vựng về công nghệ và máy tính",
                     words = listOf(
                         Word("Computer", "Máy tính"),
                         Word("Phone", "Điện thoại"),
@@ -165,11 +150,6 @@ class TopicRepository(private val context: Context) {
                 Topic(
                     id = "4",
                     name = "Animals",
-                    owner = "Charlie Brown",
-                    createdDate = System.currentTimeMillis() - 86400000 * 10, // 10 ngày trước
-                    lastModified = System.currentTimeMillis() - 86400000 * 5, // 5 ngày trước
-                    category = "Nature",
-                    description = "Từ vựng về động vật",
                     words = listOf(
                         Word("Dog", "Chó"),
                         Word("Cat", "Mèo"),
@@ -201,11 +181,6 @@ class TopicRepository(private val context: Context) {
                 Topic(
                     id = "5",
                     name = "Sports",
-                    owner = "David Wilson",
-                    createdDate = System.currentTimeMillis() - 86400000 * 2, // 2 ngày trước
-                    lastModified = System.currentTimeMillis() - 86400000 * 1, // 1 ngày trước
-                    category = "Sports",
-                    description = "Từ vựng về thể thao",
                     words = listOf(
                         Word("Football", "Bóng đá"),
                         Word("Basketball", "Bóng rổ"),
@@ -237,11 +212,6 @@ class TopicRepository(private val context: Context) {
                 Topic(
                     id = "6",
                     name = "Weather",
-                    owner = "Emma Davis",
-                    createdDate = System.currentTimeMillis() - 86400000 * 6, // 6 ngày trước
-                    lastModified = System.currentTimeMillis() - 86400000 * 3, // 3 ngày trước
-                    category = "Nature",
-                    description = "Từ vựng về thời tiết",
                     words = listOf(
                         Word("Sunny", "Nắng"),
                         Word("Cloudy", "Có mây"),

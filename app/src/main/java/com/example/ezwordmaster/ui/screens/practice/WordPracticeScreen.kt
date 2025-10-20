@@ -1,5 +1,5 @@
-package com.example.ezwordmaster.ui.screens
-
+package com.example.ezwordmaster.ui.screens.practice
+// Chọn loại ô tập
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,13 +14,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.domain.model.Topic
 import com.example.ezwordmaster.domain.repository.TopicRepository
+//import androidx.navigation.compose.rememberNavController
+//import androidx.compose.ui.tooling.preview.Preview
 
+//@Composable
+//@Preview(
+//    name = "Màn hình chính",
+//    showBackground = true,
+//    showSystemUi = false,
+//    widthDp = 365,
+//    heightDp = 815
+//)
+//fun PreviewDSS() {
+//    WordPracticeScreen(navController = rememberNavController(), topicId = "1")
+//}
 @Composable
 fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
     val context = LocalContext.current
@@ -123,7 +137,7 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
                 
@@ -146,7 +160,7 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
                 
@@ -167,7 +181,7 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
             }

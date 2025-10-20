@@ -1,6 +1,5 @@
-package com.example.ezwordmaster.ui.screens
+package com.example.ezwordmaster.ui.screens.practice
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -83,7 +81,7 @@ fun WordSelectionScreen(navController: NavHostController, topicId: String?) {
                     tint = Color(0xFF4CAF50),
                     modifier = Modifier
                         .size(45.dp)
-                        .clickable { navController.popBackStack() }
+                        .clickable { navController.navigate("practice") }
                 )
                 
                 // Chỗ trống để cân bằng bố cục
