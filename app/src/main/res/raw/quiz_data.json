@@ -1,28 +1,27 @@
 [
   {
     "question": "happy",
-    "options": ["sad", "joyful", "angry", "tired"],
-    "answer": "joyful"
-  },
-  {
-    "question": "quick",
-    "options": ["rapid", "slow", "late", "lazy"],
-    "answer": "rapid"
-  },
-  {
-    "question": "cold",
-    "options": ["warm", "freeze", "ice", "snow"],
-    "answer": "warm"
-  },
-  {
-    "question": "big",
-    "options": ["large", "small", "tiny", "little"],
-    "answer": "large"
+    "options": ["vui vẻ", "buồn bã", "tức giận", "mệt mỏi"],
+    "answer": "vui vẻ"
   },
   {
     "question": "beautiful",
-    "options": ["pretty", "ugly", "bad", "wrong"],
-    "answer": "pretty"
+    "options": ["đẹp", "xấu", "dễ thương", "tuyệt vời"],
+    "answer": "đẹp"
+  },
+  {
+    "question": "strong",
+    "options": ["mạnh mẽ", "yếu ớt", "khỏe mạnh", "cao lớn"],
+    "answer": "mạnh mẽ"
+  },
+  {
+    "question": "quick",
+    "options": ["nhanh", "chậm", "vội vàng", "từ từ"],
+    "answer": "nhanh"
+  },
+  {
+    "question": "intelligent",
+    "options": ["thông minh", "ngu ngốc", "khôn ngoan", "học giỏi"],
+    "answer": "thông minh"
   }
 ]
-

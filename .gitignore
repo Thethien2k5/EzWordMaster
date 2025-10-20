@@ -13,3 +13,41 @@
 .externalNativeBuild
 .cxx
 local.properties
+Thumbs.db
+*.log
+
+# Android build outputs
+**/build/
+*/build/
+app/release/
+
+# Keystore and signing
+*.keystore
+*.jks
+keystore.properties
+
+# Gradle
+.gradle/
+gradle-app.setting
+
+# IntelliJ/Android Studio
+/.idea/
+!/.idea/inspectionProfiles/
+!/.idea/codeStyles/
+!/.idea/runConfigurations/
+/.idea/shelf/
+/.idea/httpRequests/
+/.idea/sonarlint/
+/.idea/deploymentTargetDropDown.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/other.xml
+/.idea/misc.xml
+/.idea/.name
+
+# macOS
+# .DS_Store ignored above already
+
+# Node/yarn caches if present
+node_modules/
+yarn.lock
+package-lock.json

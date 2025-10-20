@@ -113,10 +113,8 @@ class MultiChoiceQuizViewModel(application: Application, private val showAnswer:
         // Cập nhật đáp án được chọn vào state
         _state.value = currentState.copy(selectedOption = option)
         
-        // Nếu bật hiển thị đáp án, tự động kiểm tra ngay
-        if (showAnswer) {
-            submitAnswer()
-        }
+        // Luôn kiểm tra để có thể tiến trình (kể cả khi ẩn đáp án)
+        submitAnswer()
     }
 
     /**

@@ -112,10 +112,8 @@ class TrueFalseQuizViewModel(application: Application, private val showAnswer: B
         val currentState = _state.value
         _state.value = currentState.copy(selectedOption = isTrue)
         
-        // Nếu bật hiển thị đáp án, tự động kiểm tra ngay
-        if (showAnswer) {
-            submitAnswer()
-        }
+        // Luôn kiểm tra để có thể tiến trình (kể cả khi ẩn đáp án)
+        submitAnswer()
     }
 
     /**

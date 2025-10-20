@@ -3,6 +3,7 @@ package com.example.ezwordmaster.ui.quiz
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -208,15 +209,13 @@ fun QuizResultScreen(
                     .fillMaxWidth()
                     .height(400.dp) // Cố định chiều cao để có thể cuộn
             ) {
-                Column(
+                androidx.compose.foundation.lazy.LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (answerDetails.isEmpty()) {
-                        // Hiển thị dữ liệu mẫu nếu chưa có dữ liệu thực
                         val sampleDetails = listOf(
                             QuizAnswerDetail(1, "happy", "sad", "joyful", false),
                             QuizAnswerDetail(2, "quick", "slow", "rapid", false),
@@ -224,8 +223,10 @@ fun QuizResultScreen(
                             QuizAnswerDetail(4, "big", "small", "large", false),
                             QuizAnswerDetail(5, "beautiful", "ugly", "pretty", false)
                         )
-                        
-                        sampleDetails.forEach { detail ->
+                        items(
+                            sampleDetails,
+                            key = { it.questionNumber }
+                        ) { detail ->
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = Color(0xFFF8F9FA),
@@ -234,17 +235,13 @@ fun QuizResultScreen(
                                 Column(
                                     modifier = Modifier.padding(12.dp)
                                 ) {
-                                    // Câu hỏi
                                     Text(
                                         text = "Câu hỏi ${detail.questionNumber}: ${detail.question}",
                                         style = MaterialTheme.typography.titleMedium,
                                         color = Color.Black,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    
                                     Spacer(Modifier.height(8.dp))
-                                    
-                                    // Đáp án của người dùng
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
@@ -253,16 +250,12 @@ fun QuizResultScreen(
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black
                                         )
-                                        
                                         if (detail.isCorrect) {
                                             Spacer(Modifier.width(8.dp))
                                             Text("✓", color = Color(0xFF4CAF50), fontSize = 16.sp)
                                         }
                                     }
-                                    
                                     Spacer(Modifier.height(4.dp))
-                                    
-                                    // Đáp án chính xác (màu xanh)
                                     Text(
                                         text = "Đáp án chính xác: ${detail.correctAnswer}",
                                         style = MaterialTheme.typography.bodyMedium,
@@ -273,8 +266,10 @@ fun QuizResultScreen(
                             }
                         }
                     } else {
-                        // Hiển thị dữ liệu thực từ quiz
-                        answerDetails.forEach { detail ->
+                        items(
+                            answerDetails,
+                            key = { it.questionNumber }
+                        ) { detail ->
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = Color(0xFFF8F9FA),
@@ -283,17 +278,13 @@ fun QuizResultScreen(
                                 Column(
                                     modifier = Modifier.padding(12.dp)
                                 ) {
-                                    // Câu hỏi
                                     Text(
                                         text = "Câu hỏi ${detail.questionNumber}: ${detail.question}",
                                         style = MaterialTheme.typography.titleMedium,
                                         color = Color.Black,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    
                                     Spacer(Modifier.height(8.dp))
-                                    
-                                    // Đáp án của người dùng
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
@@ -302,16 +293,12 @@ fun QuizResultScreen(
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black
                                         )
-                                        
                                         if (detail.isCorrect) {
                                             Spacer(Modifier.width(8.dp))
                                             Text("✓", color = Color(0xFF4CAF50), fontSize = 16.sp)
                                         }
                                     }
-                                    
                                     Spacer(Modifier.height(4.dp))
-                                    
-                                    // Đáp án chính xác (màu xanh)
                                     Text(
                                         text = "Đáp án chính xác: ${detail.correctAnswer}",
                                         style = MaterialTheme.typography.bodyMedium,
