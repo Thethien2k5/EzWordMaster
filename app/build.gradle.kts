@@ -73,7 +73,7 @@ dependencies {
     implementation("com.google.mlkit:translate:17.0.2")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
     // Debug & Test
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

@@ -8,4 +8,5 @@ plugins {
 
     // Thêm plugin cho Kotlinx Serialization để sửa lỗi 'Unresolved reference: serialization'
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.23" apply false
+
 }
