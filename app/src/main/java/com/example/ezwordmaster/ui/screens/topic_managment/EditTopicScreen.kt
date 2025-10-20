@@ -18,35 +18,20 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.domain.model.Word
 import com.example.ezwordmaster.domain.repository.TopicRepository
 import com.example.ezwordmaster.ui.common.AppBackground
-import androidx.compose.ui.tooling.preview.Preview
 
-
-
-//@Composable
-//@Preview(
-//    name = "Màn hình chính",
-//    showBackground = true,
-//    showSystemUi = false,
-//    widthDp = 365,
-//    heightDp = 815
-//)
-//fun PreviewDSS() {
-//    EditTopicScreen(navController = rememberNavController(), topicId = "1")
-//}
 @Composable
 fun EditTopicScreen(
     navController: NavHostController,
     topicId: String = "1"
 ) {
-    val CONTEXT = LocalContext.current
-    val REPOSITORY = remember { TopicRepository(CONTEXT) }
+    val context = LocalContext.current
+    val repository = remember { TopicRepository(context) }
 
-    var topic by remember { mutableStateOf(REPOSITORY.getTopicById(topicId)) }
+    var topic by remember { mutableStateOf(repository.getTopicById(topicId)) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var showDeleteTopicDialog by remember { mutableStateOf(false) }
     var showEditNameDialog by remember { mutableStateOf(false) }
@@ -54,9 +39,9 @@ fun EditTopicScreen(
     var showEditWordDialog by remember { mutableStateOf(false) }
     var selectedWord by remember { mutableStateOf<Word?>(null) }
 
-    // Reload topic khi cần
+    // Hàm để tải lại dữ liệu chủ đề sau khi có thay đổi
     fun reloadTopic() {
-        topic = REPOSITORY.getTopicById(topicId)
+        topic = repository.getTopicById(topicId)
     }
 
     AppBackground {
@@ -69,16 +54,16 @@ fun EditTopicScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Back button
+                // Nút quay lại
                 Image(
                     painter = painterResource(id = R.drawable.return_),
                     contentDescription = "Back",
                     modifier = Modifier
                         .size(40.dp)
-                        .clickable { navController.popBackStack() }
+                        .clickable { navController.popBackStack()}
                 )
 
-                // Topic name + Edit icon
+                // Tên chủ đề + Icon sửa
                 Row(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.Center,
@@ -101,7 +86,7 @@ fun EditTopicScreen(
                     )
                 }
 
-                // Delete topic icon
+                // Icon xóa chủ đề
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete),
                     contentDescription = "Delete topic",
@@ -112,7 +97,7 @@ fun EditTopicScreen(
                 )
             }
 
-            // Search bar
+            // Thanh tìm kiếm
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -140,7 +125,7 @@ fun EditTopicScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Add word button
+            // Nút thêm từ vựng
             Button(
                 onClick = { showAddWordDialog = true },
                 modifier = Modifier
@@ -162,7 +147,7 @@ fun EditTopicScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Word list
+            // Danh sách từ vựng
             topic?.let { currentTopic ->
                 val filteredWords = currentTopic.words.filter {
                     it.word?.contains(searchQuery.text, ignoreCase = true) ?: false ||
@@ -189,48 +174,48 @@ fun EditTopicScreen(
         }
     }
 
-    // Delete topic dialog
+    // Dialog xác nhận xóa chủ đề
     if (showDeleteTopicDialog) {
         ConfirmDeleteDialog(
             title = "Xác nhận xóa chủ đề",
             message = "Bạn có chắc chắn muốn xóa chủ đề này không?",
             onDismiss = { showDeleteTopicDialog = false },
             onConfirm = {
-                REPOSITORY.deleteTopicById(topicId)
+                repository.deleteTopicById(topicId)
                 showDeleteTopicDialog = false
                 navController.popBackStack()
             }
         )
     }
 
-    // Edit name dialog
+    // Dialog sửa tên chủ đề
     if (showEditNameDialog) {
         EditTopicNameDialog(
             currentName = topic?.name ?: "",
             onDismiss = { showEditNameDialog = false },
             onConfirm = { newName ->
-                REPOSITORY.updateTopicName(topicId, newName)
+                repository.updateTopicName(topicId, newName)
                 reloadTopic()
                 showEditNameDialog = false
             }
         )
     }
 
-    // Add word dialog
+    // Dialog thêm từ vựng
     if (showAddWordDialog) {
         AddEditWordDialog(
             title = "Thêm từ vựng",
             word = null,
             onDismiss = { showAddWordDialog = false },
             onConfirm = { newWord ->
-                REPOSITORY.addWordToTopic(topicId, newWord)
+                repository.addWordToTopic(topicId, newWord)
                 reloadTopic()
                 showAddWordDialog = false
             }
         )
     }
 
-    // Edit word dialog
+    // Dialog sửa từ vựng
     if (showEditWordDialog && selectedWord != null) {
         AddEditWordDialog(
             title = "Chỉnh sửa từ vựng",
@@ -240,13 +225,13 @@ fun EditTopicScreen(
                 selectedWord = null
             },
             onConfirm = { newWord ->
-                REPOSITORY.updateWordInTopic(topicId, selectedWord!!, newWord)
+                repository.updateWordInTopic(topicId, selectedWord!!, newWord)
                 reloadTopic()
                 showEditWordDialog = false
                 selectedWord = null
             },
             onDelete = {
-                REPOSITORY.deleteWordFromTopic(topicId, selectedWord!!)
+                repository.deleteWordFromTopic(topicId, selectedWord!!)
                 reloadTopic()
                 showEditWordDialog = false
                 selectedWord = null
@@ -277,14 +262,14 @@ fun WordItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = word.word ?:"",
+                    text = word.word ?: "",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = word.meaning ?:"",
+                    text = word.meaning ?: "",
                     fontSize = 14.sp,
                     color = Color.DarkGray
                 )
@@ -493,7 +478,7 @@ fun AddEditWordDialog(
         }
     )
 
-    // Delete confirmation dialog
+    // Dialog xác nhận xóa từ vựng
     if (showDeleteConfirm && onDelete != null) {
         ConfirmDeleteDialog(
             title = "Xác nhận xóa từ vựng",

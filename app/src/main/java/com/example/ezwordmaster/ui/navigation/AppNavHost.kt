@@ -33,20 +33,22 @@ fun AppNavHost(
         navController = navController,
         startDestination = "intro"
     ) {
-        //*** ======= HOME ======= ***///
+        //*** ======= HOME và VÀI THỨ KHÁC ======= ***///
         composable("intro") { IntroScreen(navController = navController) }
         composable("home") { HomeScreen(navController = navController) }
-
-        //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
-        //danh sách chủ đề
-        composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }
 //        composable("translate") { TranslateScreen(navController = navController) }
         composable("settings") { SettingsScreen(navController = navController) }
         composable("notificationscreen") { NotificationScreen(navController = navController) }
 
-//        composable("edittopic") { EditTopicScreen(navController = navController) }
+
+        //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
+        //danh sách chủ đề
+        composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
+        //chỉnh sửa chủ đề
+        composable("edittopic") { EditTopicScreen(navController = navController) }
+        // chủ đề cụ thể
         composable("edittopic/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             EditTopicScreen(navController = navController, topicId = topicId)
@@ -73,7 +75,7 @@ fun AppNavHost(
             val learningWords = backStackEntry.arguments?.getString("learningWords")?.toIntOrNull() ?: 0
             ResultScreen(navController = navController, topicId = topicId, knownWords = knownWords, learningWords = learningWords)
         }
-
+        //***
         // chế độ ôn tập lật thẻ
         composable("wordselection/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
