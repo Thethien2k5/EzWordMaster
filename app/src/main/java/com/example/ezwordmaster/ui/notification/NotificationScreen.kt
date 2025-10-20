@@ -1,4 +1,3 @@
-// DÁN VÀ THAY THẾ TOÀN BỘ NỘI DUNG FILE NÀY
 package com.example.ezwordmaster.ui.notification
 
 import androidx.compose.foundation.Image
@@ -19,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.data.local.NotificationEntity
+import com.example.ezwordmaster.data.model.NotificationHistoryItem
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
 import com.example.ezwordmaster.ui.navigation.Routes
@@ -37,7 +36,7 @@ fun NotificationScreen(
         Scaffold(
             topBar = {
                 CommonTopAppBar(
-                    title = "Thông Báo",
+                    title = "Lịch sử Thông Báo",
                     canNavigateBack = true,
                     onNavigateUp = { navController.popBackStack() },
                     onLogoClick = {
@@ -49,7 +48,7 @@ fun NotificationScreen(
         ) { paddingValues ->
             if (notifications.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Bạn chưa có thông báo nào.", fontSize = 18.sp, color = Color.Gray)
+                    Text("Chưa có lịch sử thông báo.", fontSize = 18.sp, color = Color.Gray)
                 }
             } else {
                 LazyColumn(
@@ -70,7 +69,7 @@ fun NotificationScreen(
 
 @Composable
 fun NotificationItem(
-    notification: NotificationEntity,
+    notification: NotificationHistoryItem,
     onDeleteClick: () -> Unit
 ) {
     Card(
@@ -95,7 +94,6 @@ fun NotificationItem(
                 Spacer(Modifier.height(4.dp))
                 Text(notification.content, fontSize = 14.sp, color = Color.Gray)
             }
-            // THÊM NÚT XÓA (ICON THÙNG RÁC)
             IconButton(onClick = onDeleteClick) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -113,7 +111,6 @@ fun NotificationItem(
     }
 }
 
-
 private fun formatTimestamp(timestamp: Long): String {
     val messageDate = Calendar.getInstance().apply { timeInMillis = timestamp }
     val now = Calendar.getInstance()
@@ -124,6 +121,6 @@ private fun formatTimestamp(timestamp: Long): String {
         now.get(Calendar.DAY_OF_YEAR) - 1 == messageDate.get(Calendar.DAY_OF_YEAR) && now.get(Calendar.YEAR) == messageDate.get(Calendar.YEAR) -> {
             "Hôm qua"
         }
-        else -> SimpleDateFormat("dd/MM", Locale.getDefault()).format(Date(timestamp))
+        else -> SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(timestamp))
     }
 }

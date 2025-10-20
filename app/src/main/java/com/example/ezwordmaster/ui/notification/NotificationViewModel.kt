@@ -2,29 +2,22 @@ package com.example.ezwordmaster.ui.notification
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ezwordmaster.data.local.NotificationEntity
-import com.example.ezwordmaster.data.repository.NotificationRepository
+import com.example.ezwordmaster.data.model.NotificationHistoryItem
+import com.example.ezwordmaster.data.repository.NotificationHistoryManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
-    private val repository: NotificationRepository
+    private val historyManager: NotificationHistoryManager
 ) : ViewModel() {
 
-    val notifications = repository.getAllNotifications()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = emptyList()
-        )
+    val notifications = historyManager.historyFlow
 
-    fun deleteNotification(notification: NotificationEntity) {
+    fun deleteNotification(item: NotificationHistoryItem) {
         viewModelScope.launch {
-            repository.delete(notification)
+            historyManager.deleteNotification(item)
         }
     }
 }
