@@ -89,22 +89,12 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                     Text(text = "$progress/$total ", fontSize = 12.sp, color = Color.Black)
                 }
 
-                MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }
-                MenuImageButton(R.drawable.practice) { /* TODO */ }
-                MenuImageButton(R.drawable.quiz) { /* TODO */ }
-//                MenuImageButton(R.drawable.translate) { navController.navigate("translate") }
-                MenuImageButton(R.drawable.ranking) { /* TODO */ }
-                Image(
-                    painter = painterResource(R.drawable.translate),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp)
-                        .padding(vertical = 6.dp)
-                        .clickable { navController.navigate("translate") }
-                        .offset(y=(-14).dp),
-                    contentScale = ContentScale.FillBounds
-                )
+                // Các nút chức năng (dùng ảnh nguyên khối)
+                MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }//quản lý
+                MenuImageButton(R.drawable.practice) { navController.navigate("practice") }// ôn tập
+                MenuImageButton(R.drawable.quiz) { navController.navigate("quiz") }//quiz
+                MenuImageButton(R.drawable.translate) { navController.navigate("translate") } //dịch
+                MenuImageButton(R.drawable.ranking) { navController.navigate("ranking") }// xếp hạng
 
                 Spacer(modifier = Modifier.height(32.dp))
 
