@@ -108,11 +108,11 @@ fun FlipCardScreen(
                 id = UUID.randomUUID().toString(),
                 topicId = topicId,
                 topicName = "FlipCard Game", // Có thể lấy từ topic nếu cần
-                startTime = startTime,
-                endTime = endTime,
+                startTimeRaw = startTime,
+                endTimeRaw = endTime,
                 totalPairs = cards.size / 2,
                 matchedPairs = matchedPairs,
-                playTime = playTime
+                playTimeRaw = playTime
             )
             studyResultRepository.addStudyResult(studyResult)
             

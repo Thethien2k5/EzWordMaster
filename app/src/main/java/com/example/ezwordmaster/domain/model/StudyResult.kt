@@ -1,6 +1,9 @@
 package com.example.ezwordmaster.domain.model
 
 import kotlinx.serialization.Serializable
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Serializable
 data class StudyResult(
@@ -8,9 +11,9 @@ data class StudyResult(
     val topicId: String,
     val topicName: String,
     val studyMode: String, // "flashcard" hoặc "flipcard"
-    val startTime: Long,
-    val endTime: Long,
-    val duration: Long, // thời gian học (giây)
+    val startTime: String,
+    val endTime: String,
+    val duration: String,
     
     // Flashcard data
     val totalWords: Int? = null,
@@ -22,21 +25,39 @@ data class StudyResult(
     val totalPairs: Int? = null,
     val matchedPairs: Int? = null,
     val completionRate: Float? = null,
-    val playTime: Long? = null
+    val playTime: String? = null
 ) {
-    // Helper function để tạo StudyResult cho Flashcard
+    // Helper functions để format thời gian
     companion object {
+        private fun formatTime(timestamp: Long): String {
+            val date = Date(timestamp)
+            val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            return formatter.format(date)
+        }
+        
+        private fun formatDuration(seconds: Long): String {
+            val hours = seconds / 3600
+            val minutes = (seconds % 3600) / 60
+            val secs = seconds % 60
+            
+            return when {
+                hours > 0 -> "${hours}h ${minutes}m ${secs}s"
+                minutes > 0 -> "${minutes}m ${secs}s"
+                else -> "${secs}s"
+            }
+        }
+        
         fun createFlashcardResult(
             id: String,
             topicId: String,
             topicName: String,
-            startTime: Long,
-            endTime: Long,
+            startTimeRaw: Long,
+            endTimeRaw: Long,
             totalWords: Int,
             knownWords: Int,
             learningWords: Int
         ): StudyResult {
-            val duration = (endTime - startTime) / 1000 // chuyển từ ms sang giây
+            val durationSeconds = (endTimeRaw - startTimeRaw) / 1000 // chuyển từ ms sang giây
             val accuracy = if (totalWords > 0) (knownWords * 100f) / totalWords else 0f
             
             return StudyResult(
@@ -44,9 +65,9 @@ data class StudyResult(
                 topicId = topicId,
                 topicName = topicName,
                 studyMode = "flashcard",
-                startTime = startTime,
-                endTime = endTime,
-                duration = duration,
+                startTime = formatTime(startTimeRaw),
+                endTime = formatTime(endTimeRaw),
+                duration = formatDuration(durationSeconds),
                 totalWords = totalWords,
                 knownWords = knownWords,
                 learningWords = learningWords,
@@ -54,18 +75,17 @@ data class StudyResult(
             )
         }
         
-        // Helper function để tạo StudyResult cho FlipCard
         fun createFlipCardResult(
             id: String,
             topicId: String,
             topicName: String,
-            startTime: Long,
-            endTime: Long,
+            startTimeRaw: Long,
+            endTimeRaw: Long,
             totalPairs: Int,
             matchedPairs: Int,
-            playTime: Long
+            playTimeRaw: Long
         ): StudyResult {
-            val duration = (endTime - startTime) / 1000 // chuyển từ ms sang giây
+            val durationSeconds = (endTimeRaw - startTimeRaw) / 1000 // chuyển từ ms sang giây
             val completionRate = if (totalPairs > 0) (matchedPairs * 100f) / totalPairs else 0f
             
             return StudyResult(
@@ -73,13 +93,13 @@ data class StudyResult(
                 topicId = topicId,
                 topicName = topicName,
                 studyMode = "flipcard",
-                startTime = startTime,
-                endTime = endTime,
-                duration = duration,
+                startTime = formatTime(startTimeRaw),
+                endTime = formatTime(endTimeRaw),
+                duration = formatDuration(durationSeconds),
                 totalPairs = totalPairs,
                 matchedPairs = matchedPairs,
                 completionRate = completionRate,
-                playTime = playTime
+                playTime = formatDuration(playTimeRaw)
             )
         }
     }

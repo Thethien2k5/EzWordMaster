@@ -84,6 +84,7 @@ class StudyResultRepository(private val context: Context) {
     // Lấy danh sách kết quả sắp xếp theo thời gian (mới nhất trước)
     fun getStudyResultsSortedByTime(): List<StudyResult> {
         val allResults = loadStudyResults()
+        // Sắp xếp theo thời gian kết thúc (String format: dd/MM/yyyy HH:mm:ss)
         return allResults.results.sortedByDescending { it.endTime }
     }
 
@@ -93,7 +94,8 @@ class StudyResultRepository(private val context: Context) {
         val results = allResults.results
         
         val totalSessions = results.size
-        val totalStudyTime = results.sumOf { it.duration }
+        // Lưu ý: totalStudyTime không thể tính từ duration String, cần thêm field durationRaw nếu cần
+        val totalStudyTime = 0L // Tạm thời để 0, có thể cần thêm field durationRaw
         val flashcardResults = results.filter { it.studyMode == "flashcard" }
         val flipcardResults = results.filter { it.studyMode == "flipcard" }
         

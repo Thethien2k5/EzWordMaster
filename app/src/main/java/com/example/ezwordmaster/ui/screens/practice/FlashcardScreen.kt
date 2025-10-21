@@ -114,8 +114,8 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
                 id = UUID.randomUUID().toString(),
                 topicId = topicId,
                 topicName = topic!!.name ?: "Unknown Topic",
-                startTime = startTime,
-                endTime = endTime,
+                startTimeRaw = startTime,
+                endTimeRaw = endTime,
                 totalWords = words.size,
                 knownWords = knownWords,
                 learningWords = learningWords
