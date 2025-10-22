@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.ui.screens
+package com.example.ezwordmaster.ui.screens.topic_managment
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -14,7 +14,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,12 +29,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import android.util.Log
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.domain.model.Topic
 import com.example.ezwordmaster.ui.common.AppBackground
 import com.example.ezwordmaster.domain.repository.TopicRepository
 
 
+//@Composable
+//@Preview(
+//    name = "Màn hình chính",
+//    showBackground = true,
+//    showSystemUi = false,
+//    widthDp = 365,
+//    heightDp = 815
+//)
+//fun PreviewDSS() {
+//    TopicManagementScreen(navController = rememberNavController())
+//}
 @Composable
 fun TopicManagementScreen(navController: NavHostController) {
     val CONTEXT = LocalContext.current
@@ -43,6 +55,7 @@ fun TopicManagementScreen(navController: NavHostController) {
 
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) } // nội dung tìm kiếm
     var topics by remember { mutableStateOf<List<Topic>>(emptyList()) } // danh sách chủ đề
+    var showAddTopicDialog by remember { mutableStateOf(false) }
 
     // Tải chủ đề
     LaunchedEffect(true) {
@@ -134,7 +147,7 @@ fun TopicManagementScreen(navController: NavHostController) {
                             color = Color.Black,
                             modifier = Modifier.padding(end = 4.dp)
                                 .clickable {
-                                "#"}
+                                    showAddTopicDialog = !showAddTopicDialog}
                         )
                         Text(
                             "Chủ Đề",
@@ -160,22 +173,36 @@ fun TopicManagementScreen(navController: NavHostController) {
 
                     items(FILTEREDTOPICS) { topic ->
 
-                        ExpandableTopicItem(topic)
+                        ExpandableTopicItem(topic,  navController = navController)
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
         }
     }
+
+    if (showAddTopicDialog) {
+        AddTopicDialog(
+            title = "Thêm chủ đề mới",
+            currentName = "",
+            onDismiss = { showAddTopicDialog = false },
+            onConfirm = { topicName ->
+                REPOSITORY.addNameTopic(topicName)
+                topics = REPOSITORY.loadTopics()
+                showAddTopicDialog = false
+            }
+        )
+    }
 }
+// Hiển thị động các chủ đề
 @Composable
-fun ExpandableTopicItem(topic: Topic) {
+fun ExpandableTopicItem(topic: Topic, navController: NavHostController) {
     var expanded by remember { mutableStateOf(false) }
     val ROTATION by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
     Card(
-        modifier = Modifier.fillMaxWidth()
-            .animateContentSize(), // co giãn mượt
+        modifier = Modifier.fillMaxWidth(),
+//            .animateContentSize(), // co giãn mượt
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F5FF)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -200,7 +227,20 @@ fun ExpandableTopicItem(topic: Topic) {
                     modifier = Modifier.weight(1f)
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.padding(end = 8.dp)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_edit),
+                        contentDescription = "Edit topic",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable { topic.id?.let { id ->
+                                navController.navigate("edittopic/$id")}}
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "${topic.words.size}",
                         fontSize = 16.sp,
@@ -218,6 +258,7 @@ fun ExpandableTopicItem(topic: Topic) {
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(7.dp))
 
             // Danh sách từ vựng khi mở rộng
             AnimatedVisibility(
@@ -225,21 +266,76 @@ fun ExpandableTopicItem(topic: Topic) {
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically()
             ) {
-                Column(modifier = Modifier.padding(top = 12.dp)) {
-                    HorizontalDivider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                    topic.words.forEach { word ->
+                // Phần cuộn chỉ cho danh sách từ vựng
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp) // giới hạn chiều cao, phần còn lại cuộn
+                ) {
+                    items(topic.words) { word ->
                         Text(
                             text = "• ${word.word}: ${word.meaning}",
                             fontSize = 14.sp,
-                            color = Color.DarkGray
+                            color = Color.DarkGray,
+                            modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp)
                         )
-                    }
-                }
+                    }}
             }
         }
     }
+}
+
+// Hộp thoại thêm chủ đề mới
+@Composable
+fun AddTopicDialog(
+    title: String = "Thêm chủ đề mới",
+    currentName: String = "",
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var topicName by remember { mutableStateOf(currentName) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFFC2DDEF),
+        title = {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        },
+        text = {
+            OutlinedTextField(
+                value = topicName,
+                onValueChange = { topicName = it },
+                placeholder = { Text("Tên chủ đề", color = Color.Gray) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color(0xFF00BCD4),
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (topicName.isNotBlank()) {
+                        onConfirm(topicName.trim())
+                    }
+                }
+            ) {
+                Text("OK", color = Color(0xFF00BCD4), fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Hủy bỏ", color = Color.Gray)
+            }
+        }
+    )
 }
