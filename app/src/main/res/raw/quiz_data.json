@@ -1,0 +1,27 @@
+[
+  {
+    "question": "happy",
+    "options": ["vui vẻ", "buồn bã", "tức giận", "mệt mỏi"],
+    "answer": "vui vẻ"
+  },
+  {
+    "question": "beautiful",
+    "options": ["đẹp", "xấu", "dễ thương", "tuyệt vời"],
+    "answer": "đẹp"
+  },
+  {
+    "question": "strong",
+    "options": ["mạnh mẽ", "yếu ớt", "khỏe mạnh", "cao lớn"],
+    "answer": "mạnh mẽ"
+  },
+  {
+    "question": "quick",
+    "options": ["nhanh", "chậm", "vội vàng", "từ từ"],
+    "answer": "nhanh"
+  },
+  {
+    "question": "intelligent",
+    "options": ["thông minh", "ngu ngốc", "khôn ngoan", "học giỏi"],
+    "answer": "thông minh"
+  }
+]
