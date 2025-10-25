@@ -30,109 +30,121 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.domain.model.FilterSortType
-import com.example.ezwordmaster.domain.model.Topic
-import com.example.ezwordmaster.domain.repository.TopicRepository
+import com.example.ezwordmaster.model.FilterSortType
+import com.example.ezwordmaster.model.Topic
+import com.example.ezwordmaster.data.repository.TopicRepositoryImpl
+import com.example.ezwordmaster.ui.common.AppBackground
 
 @Composable
-fun PracticeScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    val repository = remember { TopicRepository(context) }
+fun PracticeScreen(navController: NavHostController, viewModel: PracticeViewModel) {
+    val TOPICS by viewModel.topics.collectAsState()
 
-    var topics by remember { mutableStateOf<List<Topic>>(emptyList()) }
     var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
     var showDropdown by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
     // Tải chủ đề
     LaunchedEffect(Unit) {
-        topics = repository.loadTopics()
+        viewModel.loadTopics()
     }
 
     // Lọc và sắp xếp chủ đề
-    val filteredAndSortedTopics = remember(topics, filterSortType, searchQuery) {
+    val filteredAndSortedTopics = remember(TOPICS, filterSortType, searchQuery) {
         // 1. Lọc theo thanh tìm kiếm (tên chủ đề)
         val searchedTopics = if (searchQuery.text.isNotBlank()) {
-            topics.filter {
+            TOPICS.filter {
                 it.name?.contains(searchQuery.text, ignoreCase = true) == true
             }
         } else {
-            topics
+            TOPICS
         }
 
         // 2. Sắp xếp danh sách đã lọc
         when (filterSortType) {
-            FilterSortType.A_TO_Z -> searchedTopics.sortedBy { it.name ?: "" }
+            FilterSortType.Z_TO_A -> searchedTopics.sortedByDescending { it.name ?: "" }
             FilterSortType.WORD_COUNT -> searchedTopics.sortedByDescending { it.words.size }
             else -> searchedTopics
         }
     }
 
-    val dropdownText = when (filterSortType) {
+    val DROPDOWNTEXT = when (filterSortType) {
         FilterSortType.ALL -> "Tất cả"
-        FilterSortType.A_TO_Z -> "Sắp xếp: A - Z"
+        FilterSortType.Z_TO_A -> "Sắp xếp: Z - A"
         FilterSortType.WORD_COUNT -> "Sắp xếp: Số lượng từ"
-        else -> "Tất cả"
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFA2EAF8),
-                        Color(0xFFAAFFA7)
-                    )
-                )
-            )
+    AppBackground(
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
         ) {
-            // ... (Phần header, thanh tìm kiếm, dropdown không thay đổi)
+            Spacer(modifier = Modifier.height(16.dp))
+            // *** ======= NÚT QUAY VỀ + TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
+            // Back button
+            Image(
+                painter = painterResource(id = R.drawable.return_),
+                contentDescription = "Back",
+                modifier = Modifier
+                    .size(45.dp).offset(10.dp)
+                    .clickable { navController.navigate("home") }
+            )
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(30.dp, (-43).dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.return_),
-                    contentDescription = "Back",
-                    tint = Color(0xFF4CAF50),
+                // Search bar với kính lúp
+                Box(
                     modifier = Modifier
-                        .size(45.dp)
-                        .clickable { navController.navigate("home") }
-                )
-
+                        .weight(1f)
+                        .padding(end = 20.dp)
+                ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Tìm kiếm", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth()
+                            .height(50.dp)
+                        ,
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = Color(0xFF00BCD4),
+                            unfocusedBorderColor = Color.LightGray
+                        ),
+                        trailingIcon = {
+                            Box(modifier = Modifier.size(40.dp))
+                        }
+                    )
+                    // Kính lúp
+                    Icon(
+                        painter = painterResource(id = R.drawable.magnifying_glass),
+                        contentDescription = "Search Icon",
+                        tint = Color(0xFF00BCD4),
+                        modifier = Modifier
+                            .size(43.dp)
+                            .align(Alignment.CenterEnd)
+                            .offset(x = 1.dp, 11.dp)
+                    )
+                }
+                // Logo
                 Image(
                     painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(60.dp)
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(140.dp)
+                        .offset(x = (-30).dp) // Rất gần thanh tìm kiếm
                 )
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Thanh tìm kiếm
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Tìm kiếm tên chủ đề...") },
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color(0xFF2196F3)
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .offset(y= (-80).dp)
+        ) {
             // Dropdown chọn kiểu sắp xếp
             Card(
                 modifier = Modifier
@@ -150,7 +162,7 @@ fun PracticeScreen(navController: NavHostController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = dropdownText,
+                        text = DROPDOWNTEXT,
                         fontSize = 16.sp,
                         color = Color.Gray
                     )
@@ -171,13 +183,13 @@ fun PracticeScreen(navController: NavHostController) {
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    val availableSortTypes = listOf(
+                    val AVAILABLESORTTYPES = listOf(
                         FilterSortType.ALL,
-                        FilterSortType.A_TO_Z,
+                        FilterSortType.Z_TO_A,
                         FilterSortType.WORD_COUNT
                     )
                     Column(modifier = Modifier.padding(8.dp)) {
-                        availableSortTypes.forEach { type ->
+                        AVAILABLESORTTYPES.forEach { type ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -191,9 +203,8 @@ fun PracticeScreen(navController: NavHostController) {
                                 Text(
                                     text = when (type) {
                                         FilterSortType.ALL -> "Tất cả"
-                                        FilterSortType.A_TO_Z -> "Sắp xếp: A - Z"
+                                        FilterSortType.Z_TO_A -> "Sắp xếp: Z - A"
                                         FilterSortType.WORD_COUNT -> "Sắp xếp: Số lượng từ"
-                                        else -> ""
                                     },
                                     fontSize = 14.sp,
                                     color = if (filterSortType == type) Color(0xFF2196F3) else Color.Black
@@ -244,28 +255,26 @@ fun PracticeScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
-        }
+        }}
     }
 }
 
 @Composable
 fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val rotation by animateFloatAsState(
+    val ROTATION by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         label = "rotation"
     )
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            // SỬA Ở ĐÂY: Đã đơn giản hóa cấu trúc Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -304,7 +313,7 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
                         modifier = Modifier
                             .size(16.dp)
                             .clickable(onClick = { expanded = !expanded })
-                            .rotate(rotation)
+                            .rotate(ROTATION)
                     )
                 }
             }
@@ -316,7 +325,7 @@ fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
                     HorizontalDivider(
                         color = Color.LightGray,

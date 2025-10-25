@@ -21,8 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.ezwordmaster.domain.model.HelpItem
-import com.example.ezwordmaster.domain.repository.HelpViewModel
+import com.example.ezwordmaster.model.HelpItem
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
 

@@ -1,5 +1,5 @@
 package com.example.ezwordmaster.ui.screens.practice
-// Chọn loại ô tập
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -19,37 +18,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.domain.model.Topic
-import com.example.ezwordmaster.domain.repository.TopicRepository
-//import androidx.navigation.compose.rememberNavController
-//import androidx.compose.ui.tooling.preview.Preview
 
-//@Composable
-//@Preview(
-//    name = "Màn hình chính",
-//    showBackground = true,
-//    showSystemUi = false,
-//    widthDp = 365,
-//    heightDp = 815
-//)
-//fun PreviewDSS() {
-//    WordPracticeScreen(navController = rememberNavController(), topicId = "1")
-//}
 @Composable
-fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
-    val context = LocalContext.current
-    val repository = remember { TopicRepository(context) }
-    
-    var topic by remember { mutableStateOf<Topic?>(null) }
-    
-    // Tải chủ đề theo ID
+fun WordPracticeScreen(
+    navController: NavHostController,
+    topicId: String?,
+    viewModel: PracticeViewModel // THAY ĐỔI 1: Nhận ViewModel, xóa các biến không cần thiết
+) {
+    // THAY ĐỔI 2: Lấy trạng thái của chủ đề được chọn từ ViewModel
+    val selectedTopic by viewModel.selectedTopic.collectAsState()
+
+    // THAY ĐỔI 3: Dùng LaunchedEffect để yêu cầu ViewModel tải dữ liệu cho chủ đề này
     LaunchedEffect(topicId) {
-        if (topicId != null) {
-            val topics = repository.loadTopics()
-            topic = topics.find { it.id == topicId }
+        if (!topicId.isNullOrEmpty()) {
+            viewModel.loadTopicById(topicId)
         }
     }
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -81,20 +66,23 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                         .size(45.dp)
                         .clickable { navController.popBackStack() }
                 )
-                
+
                 Text(
-                    text = topic?.name ?: "Chọn chế độ học",
+                    // THAY ĐỔI 4: Sử dụng trạng thái `selectedTopic` từ ViewModel để hiển thị tên
+                    text = selectedTopic?.name ?: "Đang tải...",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color.Black,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
                 )
-                
+
                 // Chỗ trống để cân bằng bố cục
-                Spacer(modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.size(45.dp))
             }
-            
+
             Spacer(modifier = Modifier.height(40.dp))
-            
+
             // Biểu tượng chính
             Box(
                 modifier = Modifier
@@ -108,9 +96,9 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                     modifier = Modifier.size(400.dp)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             // Các nút chế độ học
             Column(
                 modifier = Modifier
@@ -122,7 +110,7 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { 
+                        .clickable {
                             navController.navigate("flashcard/$topicId")
                         },
                     shape = RoundedCornerShape(32.dp),
@@ -140,12 +128,12 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                         textAlign = TextAlign.Center
                     )
                 }
-                
+
                 // Nút lật thẻ
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { 
+                        .clickable {
                             navController.navigate("wordselection/$topicId")
                         },
                     shape = RoundedCornerShape(32.dp),
@@ -163,7 +151,7 @@ fun WordPracticeScreen(navController: NavHostController, topicId: String?) {
                         textAlign = TextAlign.Center
                     )
                 }
-                
+
                 // Nút lịch sử ôn tập
                 Card(
                     modifier = Modifier

@@ -24,37 +24,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.domain.model.Topic
-import com.example.ezwordmaster.domain.model.StudyResult
-import com.example.ezwordmaster.domain.repository.TopicRepository
-import com.example.ezwordmaster.domain.repository.StudyResultRepository
+import com.example.ezwordmaster.model.Topic
+import com.example.ezwordmaster.model.StudyResult
 import kotlinx.coroutines.delay
 import java.util.UUID
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.alpha
 
-//import androidx.compose.ui.tooling.preview.Preview
-//import androidx.navigation.compose.rememberNavController
 enum class SwipeDirection {
     LEFT, RIGHT
 }
 
-//@Composable
-//@Preview(
-//    name = "Màn hình chính",
-//    showBackground = true,
-//    showSystemUi = false,
-//    widthDp = 365,
-//    heightDp = 815
-//)
-//fun PreviewDSS() {
-//    FlashcardScreen(navController = rememberNavController(), topicId = "1")
-//}
 @Composable
-fun FlashcardScreen(navController: NavHostController, topicId: String?) {
-    val context = LocalContext.current
-    val repository = remember { TopicRepository(context) }
-    val studyResultRepository = remember { StudyResultRepository(context) }
+fun FlashcardScreen(navController: NavHostController, topicId: String?, viewModel: FlashcardViewModel) {
+    val uiState by viewModel.UISTATE.collectAsState()
 
     var topic by remember { mutableStateOf<Topic?>(null) }
     var currentIndex by remember { mutableStateOf(0) }
@@ -68,11 +51,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
 
     // Tải chủ đề theo ID và khởi tạo thời gian bắt đầu
     LaunchedEffect(topicId) {
-        if (topicId != null) {
-            val topics = repository.loadTopics()
-            topic = topics.find { it.id == topicId }
-            startTime = System.currentTimeMillis() // Ghi nhận thời gian bắt đầu
-        }
+        viewModel.loadTopic(topicId?:"Lỗi không thấy id")
     }
 
     val words = topic?.words ?: emptyList()
@@ -106,24 +85,13 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?) {
     }
 
     // Chuyển đến màn hình kết quả khi hoàn thành và lưu kết quả
-    LaunchedEffect(isCompleted) {
-        if (isCompleted && topicId != null && topic != null) {
-            // Lưu kết quả học tập
-            val endTime = System.currentTimeMillis()
-            val studyResult = StudyResult.createFlashcardResult(
-                id = UUID.randomUUID().toString(),
-                topicId = topicId,
-                topicName = topic!!.name ?: "Unknown Topic",
-                startTime = startTime,
-                endTime = endTime,
-                totalWords = words.size,
-                knownWords = knownWords,
-                learningWords = learningWords
-            )
-            studyResultRepository.addStudyResult(studyResult)
-
-            // Chuyển đến màn hình kết quả
-            navController.navigate("result/$topicId/$knownWords/$learningWords")
+    LaunchedEffect(uiState.ISCOMPLETED) {
+        if (uiState.ISCOMPLETED) {
+            val topicName = uiState.TOPIC?.name ?: "Unknown"
+            // Điều hướng đến màn hình kết quả và xóa các màn hình ôn tập trước đó khỏi stack
+            navController.navigate("result/${topicId}/${topicName}/${uiState.KNOWNWORDS}/${uiState.LEARNINGWORDS}") {
+                popUpTo("practice") { inclusive = false }
+            }
         }
     }
 

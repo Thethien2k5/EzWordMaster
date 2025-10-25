@@ -22,31 +22,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.domain.model.Word
-import com.example.ezwordmaster.domain.model.StudyResult
-import com.example.ezwordmaster.domain.repository.StudyResultRepository
+import com.example.ezwordmaster.model.Word
+import com.example.ezwordmaster.model.StudyResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
+import com.example.ezwordmaster.model.CardItem
 
-data class CardItem(
-    val id: String,
-    val text: String,
-    val isWord: Boolean, // true = từ, false = nghĩa
-    val pairId: String, // ID để xác định cặp từ-nghĩa
-    val isMatched: Boolean = false,
-    val isFlipped: Boolean = false,
-    val isWrong: Boolean = false // Thêm trạng thái để hiển thị viền đỏ khi sai
-)
+
 
 @Composable
 fun FlipCardScreen(
     navController: NavHostController, 
     topicId: String?, 
-    wordsJson: String?
+    wordsJson: String?,
+    viewModel: FlipCardViewModel
 ) {
-    val context = LocalContext.current
-    val studyResultRepository = remember { StudyResultRepository(context) }
+    val UI_STATE by viewModel.UI_STATE.collectAsState()
+    LaunchedEffect(wordsJson) {
+        viewModel.setupGame(topicId ?: "Lỗi không thấy id FlipCardScreen",
+            wordsJson ?:"Lỗi khongo thấy file từ vựng FlipCardScreen")
+    }
     
     var flippedCards by remember { mutableStateOf<List<CardItem>>(emptyList()) }
     var matchedPairs by remember { mutableStateOf(0) }
@@ -55,7 +51,8 @@ fun FlipCardScreen(
     var wrongCards by remember { mutableStateOf<Set<String>>(emptySet()) } // Lưu trữ ID của thẻ sai
     var correctCards by remember { mutableStateOf<Set<String>>(emptySet()) } // Lưu trữ ID của thẻ đúng
     var startTime by remember { mutableStateOf(0L) } // Thời gian bắt đầu chơi
-    val coroutineScope = rememberCoroutineScope()
+
+    val COROUTINESCOPE = rememberCoroutineScope()
     
     // Phân tích từ từ chuỗi JSON và tạo thẻ
     LaunchedEffect(wordsJson) {
@@ -99,25 +96,12 @@ fun FlipCardScreen(
     }
     
     // Chuyển đến màn hình kết quả khi hoàn thành và lưu kết quả
-    LaunchedEffect(isCompleted) {
-        if (isCompleted && topicId != null) {
-            // Lưu kết quả trò chơi
-            val endTime = System.currentTimeMillis()
-            val playTime = (endTime - startTime) / 1000 // chuyển từ ms sang giây
-            val studyResult = StudyResult.createFlipCardResult(
-                id = UUID.randomUUID().toString(),
-                topicId = topicId,
-                topicName = "FlipCard Game", // Có thể lấy từ topic nếu cần
-                startTime = startTime,
-                endTime = endTime,
-                totalPairs = cards.size / 2,
-                matchedPairs = matchedPairs,
-                playTime = playTime
-            )
-            studyResultRepository.addStudyResult(studyResult)
-            
-            // Chuyển đến màn hình kết quả
-            navController.navigate("flipresult/$topicId/$matchedPairs")
+    LaunchedEffect(UI_STATE.IS_COMPLETED) {
+        if (UI_STATE.IS_COMPLETED) {
+            val TOPIC_NAME = UI_STATE.TOPIC?.name ?: "Unknown"
+            navController.navigate("flipresult/$topicId/$TOPIC_NAME/${UI_STATE.MATCHED_PAIRS}") {
+                popUpTo("practice") { inclusive = false }
+            }
         }
     }
     
@@ -213,7 +197,7 @@ fun FlipCardScreen(
                                         correctCards = correctCards + card1.id + card2.id
                                         
                                         // Đặt lại thẻ đã lật sau delay để người dùng thấy viền xanh
-                                        coroutineScope.launch {
+                                        COROUTINESCOPE.launch {
                                             delay(1000) // Độ trễ để người dùng thấy viền xanh và đọc nội dung
                                             
                                             // Sau delay, đánh dấu matched và ẩn thẻ
@@ -231,7 +215,7 @@ fun FlipCardScreen(
                                         wrongCards = wrongCards + card1.id + card2.id
                                         
                                         // Đặt lại thẻ đã lật và xóa trạng thái sai sau delay dài hơn
-                                        coroutineScope.launch {
+                                        COROUTINESCOPE.launch {
                                             delay(1500) // Độ trễ dài hơn để người dùng thấy viền đỏ và đọc nội dung
                                             flippedCards = emptyList()
                                             wrongCards = emptySet()

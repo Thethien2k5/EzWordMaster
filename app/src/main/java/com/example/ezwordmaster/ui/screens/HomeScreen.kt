@@ -24,17 +24,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.common.AppBackground
 
-//@Composable
-//@Preview(
-//    name = "Màn hình chính",
-//    showBackground = true,
-//    showSystemUi = false,
-//    widthDp = 365,
-//    heightDp = 815
-//)
-//fun PreviewDSS() {
-//    HomeScreen(navController = rememberNavController(), progress = 75, total = 100)
-//}
+@Composable
+@Preview(
+    name = "Màn hình chính",
+    showBackground = true,
+    showSystemUi = false,
+    widthDp = 365,
+    heightDp = 815
+)
+fun PreviewDSS() {
+    HomeScreen(navController = rememberNavController(), progress = 75, total = 100)
+}
 @Composable
 fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int = 100) {
     AppBackground {
@@ -91,11 +91,11 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
 
                 // Các nút chức năng (dùng ảnh nguyên khối)
                 MenuImageButton(R.drawable.topic) { navController.navigate("topicmanagementscreen") }
-                // Điều hướng tới Quiz Setting trước khi làm bài
-                MenuImageButton(R.drawable.practice) { /* TODO: practice */ }
+                MenuImageButton(R.drawable.practice) { navController.navigate("practice") }
                 MenuImageButton(R.drawable.quiz) { navController.navigate("quiz_setting") }
-                MenuImageButton(R.drawable.translate) { /* TODO: translate */ }
-                MenuImageButton(R.drawable.ranking) { /* TODO: ranking */ }
+                MenuImageButton(R.drawable.ranking) { navController.navigate("/*TO DO */") }
+
+                MenuImageButton(R.drawable.translate) { navController.navigate("/*TO DO */") }
 
                 Spacer(modifier = Modifier.height(32.dp))
 

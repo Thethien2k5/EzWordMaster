@@ -18,32 +18,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.domain.model.Topic
-import com.example.ezwordmaster.domain.repository.TopicRepository
+import com.example.ezwordmaster.model.Topic
+import com.example.ezwordmaster.data.repository.TopicRepositoryImpl
 
 @Composable
 fun ResultScreen(
-    navController: NavHostController, 
-    topicId: String?, 
-    knownWords: Int, 
-    learningWords: Int
+    navController: NavHostController,
+    topicId: String?,
+    knownWords: Int,
+    learningWords: Int,
+    viewModel: PracticeViewModel
 ) {
-    val context = LocalContext.current
-    val repository = remember { TopicRepository(context) }
-    
-    var topic by remember { mutableStateOf<Topic?>(null) }
-    
+    val TOPIC by viewModel.selectedTopic.collectAsState()
+
     // Tải chủ đề theo ID
     LaunchedEffect(topicId) {
-        if (topicId != null) {
-            val topics = repository.loadTopics()
-            topic = topics.find { it.id == topicId }
+        if (!topicId.isNullOrEmpty()) {
+            viewModel.loadTopicById(topicId)
         }
     }
-    
-    val totalWords = topic?.words?.size ?: 0
-    val progressPercentage = if (totalWords > 0) (knownWords * 100) / totalWords else 0
-    
+
+    val TOTALWORDS = TOPIC?.words?.size ?: 0
+    val PROGRESSPERCENTAGE = if (TOTALWORDS > 0) (knownWords * 100) / TOTALWORDS else 0
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -74,9 +71,9 @@ fun ResultScreen(
                     modifier = Modifier.size(70.dp)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(40.dp))
-            
+
             // Tiêu đề
             Text(
                 text = "Chúc mừng đã hoàn thành",
@@ -86,9 +83,9 @@ fun ResultScreen(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = "Tiến độ bài học",
                 fontSize = 18.sp,
@@ -96,9 +93,9 @@ fun ResultScreen(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(40.dp))
-            
+
             // Vòng tròn tiến độ và thống kê
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -110,20 +107,20 @@ fun ResultScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        progress = { progressPercentage / 100f },
+                        progress = { PROGRESSPERCENTAGE / 100f },
                         modifier = Modifier.size(120.dp),
                         color = Color(0xFF4CAF50),
                         strokeWidth = 8.dp,
                         trackColor = Color.White
                     )
                     Text(
-                        text = "$progressPercentage%",
+                        text = "$PROGRESSPERCENTAGE%",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
                 }
-                
+
                 // Nhãn thống kê
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -153,7 +150,7 @@ fun ResultScreen(
                             )
                         }
                     }
-                    
+
                     // Từ đang học
                     Card(
                         shape = RoundedCornerShape(20.dp),
@@ -181,9 +178,9 @@ fun ResultScreen(
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.weight(1f))
-            
+
             // Các nút hành động
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -192,7 +189,7 @@ fun ResultScreen(
             ) {
                 // Nút làm lại
                 Button(
-                    onClick = { 
+                    onClick = {
                         navController.navigate("flashcard/$topicId")
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -207,10 +204,10 @@ fun ResultScreen(
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
                 }
-                
+
                 // Nút chỉnh sửa thẻ ghi
                 Button(
-                    onClick = { 
+                    onClick = {
                         navController.navigate("topicmanagementscreen")
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -225,10 +222,10 @@ fun ResultScreen(
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
                 }
-                
+
                 // Nút quay lại bài làm
                 Button(
-                    onClick = { 
+                    onClick = {
                         navController.navigate("wordpractice/$topicId")
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -243,10 +240,10 @@ fun ResultScreen(
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
                 }
-                
+
                 // Nút quay lại trang chủ
                 Button(
-                    onClick = { 
+                    onClick = {
                         navController.navigate("home")
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -262,7 +259,7 @@ fun ResultScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
         }
     }

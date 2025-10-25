@@ -1,5 +1,6 @@
 package com.example.ezwordmaster.ui.screens.topic_managment
 
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,19 +20,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.domain.model.Word
-import com.example.ezwordmaster.domain.repository.TopicRepository
+import com.example.ezwordmaster.model.Word
 import com.example.ezwordmaster.ui.common.AppBackground
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTopicScreen(
     navController: NavHostController,
-    topicId: String = "1"
+    topicId: String,
+    viewModel: TopicViewModel
 ) {
-    val context = LocalContext.current
-    val repository = remember { TopicRepository(context) }
+    val TOPIC by viewModel.SELECTEDTOPIC.collectAsState()
 
-    var topic by remember { mutableStateOf(repository.getTopicById(topicId)) }
+    val TOASTMESSAGE by viewModel.toastMessage.collectAsState()
+    val SNACKBARHOSTSTATE = remember { SnackbarHostState() }
+    val COROUTINESCOPE = rememberCoroutineScope()
+
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var showDeleteTopicDialog by remember { mutableStateOf(false) }
     var showEditNameDialog by remember { mutableStateOf(false) }
@@ -39,18 +43,35 @@ fun EditTopicScreen(
     var showEditWordDialog by remember { mutableStateOf(false) }
     var selectedWord by remember { mutableStateOf<Word?>(null) }
 
+    LaunchedEffect(TOASTMESSAGE) {
+        TOASTMESSAGE?.let { message ->
+            COROUTINESCOPE.launch {
+                SNACKBARHOSTSTATE.showSnackbar(message)
+            }
+            viewModel.clearToastMessage() // Rất quan trọng: Xóa lỗi sau khi hiển thị
+        }
+    }
+
     // Hàm để tải lại dữ liệu chủ đề sau khi có thay đổi
-    fun reloadTopic() {
-        topic = repository.getTopicById(topicId)
+    LaunchedEffect(topicId) {
+        viewModel.loadTopicById(topicId)
     }
 
     AppBackground {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Header
-            Row(
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = SNACKBARHOSTSTATE) },
+            containerColor = Color.Transparent
+            ) {paddingValues ->
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -70,7 +91,7 @@ fun EditTopicScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = topic?.name ?: "",
+                        text = TOPIC?.name ?: "",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -148,7 +169,7 @@ fun EditTopicScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Danh sách từ vựng
-            topic?.let { currentTopic ->
+            TOPIC?.let { currentTopic ->
                 val filteredWords = currentTopic.words.filter {
                     it.word?.contains(searchQuery.text, ignoreCase = true) ?: false ||
                             it.meaning?.contains(searchQuery.text, ignoreCase = true) ?: false
@@ -181,7 +202,7 @@ fun EditTopicScreen(
             message = "Bạn có chắc chắn muốn xóa chủ đề này không?",
             onDismiss = { showDeleteTopicDialog = false },
             onConfirm = {
-                repository.deleteTopicById(topicId)
+                viewModel.deleteTopicById(topicId)
                 showDeleteTopicDialog = false
                 navController.popBackStack()
             }
@@ -191,11 +212,10 @@ fun EditTopicScreen(
     // Dialog sửa tên chủ đề
     if (showEditNameDialog) {
         EditTopicNameDialog(
-            currentName = topic?.name ?: "",
+            currentName = TOPIC?.name ?: "",
             onDismiss = { showEditNameDialog = false },
             onConfirm = { newName ->
-                repository.updateTopicName(topicId, newName)
-                reloadTopic()
+                viewModel.updateTopicName(topicId, newName)
                 showEditNameDialog = false
             }
         )
@@ -208,8 +228,7 @@ fun EditTopicScreen(
             word = null,
             onDismiss = { showAddWordDialog = false },
             onConfirm = { newWord ->
-                repository.addWordToTopic(topicId, newWord)
-                reloadTopic()
+                viewModel.addWordToTopic(topicId, newWord)
                 showAddWordDialog = false
             }
         )
@@ -225,20 +244,18 @@ fun EditTopicScreen(
                 selectedWord = null
             },
             onConfirm = { newWord ->
-                repository.updateWordInTopic(topicId, selectedWord!!, newWord)
-                reloadTopic()
+                viewModel.updateWordInTopic(topicId, selectedWord!!, newWord)
                 showEditWordDialog = false
                 selectedWord = null
             },
             onDelete = {
-                repository.deleteWordFromTopic(topicId, selectedWord!!)
-                reloadTopic()
+                viewModel.deleteWordFromTopic(topicId, selectedWord!!)
                 showEditWordDialog = false
                 selectedWord = null
             }
         )
     }
-}
+}}
 
 @Composable
 fun WordItem(
