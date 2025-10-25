@@ -2,7 +2,17 @@ package com.example.ezwordmaster.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -16,25 +26,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.common.AppBackground
 
-@Composable
-@Preview(
-    name = "Màn hình chính",
-    showBackground = true,
-    showSystemUi = false,
-    widthDp = 365,
-    heightDp = 815
-)
-fun PreviewDSS() {
-    HomeScreen(navController = rememberNavController(), progress = 75, total = 100)
-}
+//@Composable
+//@Preview(
+//    name = "Màn hình chính",
+//    showBackground = true,
+//    showSystemUi = false,
+//    widthDp = 365,
+//    heightDp = 815
+//)
+//fun PreviewDSS() {
+//    HomeScreen(navController = rememberNavController(), progress = 75, total = 100)
+//}
 @Composable
 fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int = 100) {
     AppBackground {
@@ -95,30 +103,21 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                 MenuImageButton(R.drawable.quiz) { navController.navigate("quiz_setting") }
                 MenuImageButton(R.drawable.ranking) { navController.navigate("/*TO DO */") }
 
-                MenuImageButton(R.drawable.translate) { navController.navigate("/*TO DO */") }
+                Image(
+                    painter = painterResource(R.drawable.translate),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .padding(vertical = 6.dp)
+                        .clickable { navController.navigate("/*TO DO */") }
+                        .offset(y = (-6).dp),
+                    contentScale = ContentScale.FillBounds
+                )
+
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_help),
-                        contentDescription = "Help",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable { navController.navigate("help") }
-                    )
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_info),
-                        contentDescription = "Info",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable { navController.navigate("about") }
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
             Row(
@@ -140,6 +139,32 @@ fun HomeScreen(navController: NavHostController, progress: Int = 75, total: Int 
                     contentDescription = "Notifications",
                     modifier = Modifier
                         .size(28.dp)
+                        .clickable { navController.navigate("notification") }
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                // Icon Settings - góc dưới bên trái
+                Image(
+                    painter = painterResource(id = R.drawable.ic_help),
+                    contentDescription = "Settings",
+                    modifier = Modifier
+                        .size(28.dp)
+                        .align(Alignment.BottomStart)
+                        .clickable { navController.navigate("settings") }
+                )
+
+                // - góc dưới bên phải
+                Image(
+                    painter = painterResource(id = R.drawable.ic_info),
+                    contentDescription = "Notifications",
+                    modifier = Modifier
+                        .size(28.dp)
+                        .align(Alignment.BottomEnd) // ✅ Luôn ở góc dưới phải
                         .clickable { navController.navigate("notification") }
                 )
             }

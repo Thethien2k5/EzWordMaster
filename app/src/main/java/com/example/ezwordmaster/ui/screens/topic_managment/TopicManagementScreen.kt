@@ -55,32 +55,45 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
+import com.example.ezwordmaster.model.FilterSortType
 import com.example.ezwordmaster.model.Topic
 import com.example.ezwordmaster.ui.common.AppBackground
+import com.example.ezwordmaster.ui.common.BackBar
+import com.example.ezwordmaster.ui.common.Menu
 import kotlinx.coroutines.launch
 
 
-//@Composable
-//@Preview(
-//    name = "Màn hình chính",
-//    showBackground = true,
-//    showSystemUi = false,
-//    widthDp = 365,
-//    heightDp = 815
-//)
-//fun PreviewDSS() {
-//    TopicManagementScreen(navController = rememberNavController())
-//}
 @Composable
 fun TopicManagementScreen(navController: NavHostController, viewModel: TopicViewModel) {
-    val TOPICS by viewModel.TOPICS.collectAsState() // lắng nghe viewModel.topics thay đổi thì topics thay đổi theo
-
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) } // nội dung tìm kiếm
-    var showAddTopicDialog by remember { mutableStateOf(false) }
-
+    val TOPICS by viewModel.TOPICS.collectAsState()
     val TOASTMESSAGE by viewModel.toastMessage.collectAsState()
-    val SNACKBARHOSTSTATE = remember { SnackbarHostState() }
     val COROUTINESCOPE = rememberCoroutineScope()
+    val SNACKBARHOSTSTATE = remember { SnackbarHostState() }
+
+    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+    var showAddTopicDialog by remember { mutableStateOf(false) }
+    var showDropdown by remember { mutableStateOf(false) }
+    var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
+
+
+    // Lọc và sắp xếp chủ đề
+    remember(TOPICS, filterSortType, searchQuery) {
+        // 1. Lọc theo thanh tìm kiếm (tên chủ đề)
+        val searchedTopics = if (searchQuery.text.isNotBlank()) {
+            TOPICS.filter {
+                it.name?.contains(searchQuery.text, ignoreCase = true) == true
+            }
+        } else {
+            TOPICS
+        }
+
+        // 2. Sắp xếp danh sách đã lọc
+        when (filterSortType) {
+            FilterSortType.Z_TO_A -> searchedTopics.sortedByDescending { it.name ?: "" }
+            FilterSortType.WORD_COUNT -> searchedTopics.sortedByDescending { it.words.size }
+            else -> searchedTopics
+        }
+    }
 
     LaunchedEffect(TOASTMESSAGE) {
         TOASTMESSAGE?.let { message ->
@@ -108,14 +121,7 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
                 Spacer(modifier = Modifier.height(16.dp))
                 // *** ======= NÚT QUAY VỀ + TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
                 // Back button
-                Image(
-                    painter = painterResource(id = R.drawable.return_),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(45.dp)
-                        .offset(10.dp)
-                        .clickable { navController.navigate("home") }
-                )
+                BackBar(navController = navController, "Quản lý")
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -200,6 +206,17 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_triangle),
+                                contentDescription = "Sort",
+                                tint = Color.Black,
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .rotate(if (showDropdown) 180f else 0f)
+                                    .clickable { showDropdown = !showDropdown }
+                            )
+
                         }
                         Text(
                             "Số lượng từ",
@@ -207,8 +224,17 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
-                    }
 
+
+                    }
+                    Menu(
+                        showDropdown = showDropdown,
+                        onDropdownToggle = { isVisible -> showDropdown = isVisible },
+                        filterSortType = filterSortType,
+                        onFilterSortTypeChange = { newType -> filterSortType = newType },
+                        modifier = Modifier
+                            .offset(x = 16.dp)
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     // Danh sách chủ đề
                     LazyColumn {

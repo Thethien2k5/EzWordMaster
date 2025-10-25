@@ -1,27 +1,42 @@
 package com.example.ezwordmaster.ui.screens.practice
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,15 +47,16 @@ import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.FilterSortType
 import com.example.ezwordmaster.model.Topic
-import com.example.ezwordmaster.data.repository.TopicRepositoryImpl
 import com.example.ezwordmaster.ui.common.AppBackground
+import com.example.ezwordmaster.ui.common.HeaderBar
+import com.example.ezwordmaster.ui.common.SortDropdownMenu
 
 @Composable
 fun PracticeScreen(navController: NavHostController, viewModel: PracticeViewModel) {
     val TOPICS by viewModel.topics.collectAsState()
 
-    var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
     var showDropdown by remember { mutableStateOf(false) }
+    var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
     // Tải chủ đề
@@ -67,197 +83,64 @@ fun PracticeScreen(navController: NavHostController, viewModel: PracticeViewMode
         }
     }
 
-    val DROPDOWNTEXT = when (filterSortType) {
-        FilterSortType.ALL -> "Tất cả"
-        FilterSortType.Z_TO_A -> "Sắp xếp: Z - A"
-        FilterSortType.WORD_COUNT -> "Sắp xếp: Số lượng từ"
-    }
-
-    AppBackground(
-    ) {
-        Column(
-        ) {
+    AppBackground {
+        Column {
             Spacer(modifier = Modifier.height(16.dp))
             // *** ======= NÚT QUAY VỀ + TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
-            // Back button
-            Image(
-                painter = painterResource(id = R.drawable.return_),
-                contentDescription = "Back",
-                modifier = Modifier
-                    .size(45.dp).offset(10.dp)
-                    .clickable { navController.navigate("home") }
+            HeaderBar(
+                navController = navController,
+                text = "Ôn tập",
+                searchQuery = searchQuery,
+                onSearchQueryChange = { newQuery ->
+                    searchQuery = newQuery
+                },
+                showSearchHeader = true
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(30.dp, (-43).dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                // Search bar với kính lúp
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 20.dp)
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = { Text("Tìm kiếm", color = Color.Gray) },
-                        modifier = Modifier.fillMaxWidth()
-                            .height(50.dp)
-                        ,
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF00BCD4),
-                            unfocusedBorderColor = Color.LightGray
-                        ),
-                        trailingIcon = {
-                            Box(modifier = Modifier.size(40.dp))
-                        }
-                    )
-                    // Kính lúp
-                    Icon(
-                        painter = painterResource(id = R.drawable.magnifying_glass),
-                        contentDescription = "Search Icon",
-                        tint = Color(0xFF00BCD4),
-                        modifier = Modifier
-                            .size(43.dp)
-                            .align(Alignment.CenterEnd)
-                            .offset(x = 1.dp, 11.dp)
-                    )
-                }
-                // Logo
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .size(140.dp)
-                        .offset(x = (-30).dp) // Rất gần thanh tìm kiếm
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .offset(y= (-80).dp)
-        ) {
-            // Dropdown chọn kiểu sắp xếp
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDropdown = !showDropdown },
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = DROPDOWNTEXT,
-                        fontSize = 16.sp,
-                        color = Color.Gray
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_triangle),
-                        contentDescription = "Dropdown",
-                        tint = Color.Black,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
 
-            // Menu thả xuống
-            if (showDropdown) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            Spacer(modifier = Modifier.height(37.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .offset(y = (-80).dp)
+            ) {
+                // ============= SẮP XẾP ======================
+                SortDropdownMenu(
+                    showDropdown = showDropdown,
+                    onDropdownToggle = { isVisible ->
+                        showDropdown = isVisible
+                    },
+                    filterSortType = filterSortType,
+                    onFilterSortTypeChange = { newType ->
+                        filterSortType = newType
+                    },
+                    modifier = Modifier
+                        .offset(x = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Danh sách chủ đề
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    val AVAILABLESORTTYPES = listOf(
-                        FilterSortType.ALL,
-                        FilterSortType.Z_TO_A,
-                        FilterSortType.WORD_COUNT
-                    )
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        AVAILABLESORTTYPES.forEach { type ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        filterSortType = type
-                                        showDropdown = false
-                                    }
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = when (type) {
-                                        FilterSortType.ALL -> "Tất cả"
-                                        FilterSortType.Z_TO_A -> "Sắp xếp: Z - A"
-                                        FilterSortType.WORD_COUNT -> "Sắp xếp: Số lượng từ"
-                                    },
-                                    fontSize = 14.sp,
-                                    color = if (filterSortType == type) Color(0xFF2196F3) else Color.Black
-                                )
+                    items(filteredAndSortedTopics.filter { topic ->
+                        !topic.name.isNullOrEmpty() &&
+                                topic.words.isNotEmpty()
+                    }) { topic ->
+                        TopicCard(
+                            topic = topic,
+                            onTopicClick = { topicId ->
+                                navController.navigate("wordpractice/$topicId")
                             }
-                        }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Chủ Đề",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                Text(
-                    text = "Số lượng từ",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Danh sách chủ đề
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(filteredAndSortedTopics.filter { topic ->
-                    !topic.name.isNullOrEmpty() &&
-                            topic.words.isNotEmpty()
-                }) { topic ->
-                    TopicCard(
-                        topic = topic,
-                        onTopicClick = { topicId ->
-                            navController.navigate("wordpractice/$topicId")
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
-        }}
+        }
     }
 }
+
 
 @Composable
 fun TopicCard(topic: Topic, onTopicClick: (String) -> Unit) {

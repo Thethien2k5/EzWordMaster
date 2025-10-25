@@ -1,15 +1,28 @@
 package com.example.ezwordmaster.ui.screens.practice
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -18,35 +31,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
+import com.example.ezwordmaster.ui.common.AppBackground
 
 @Composable
 fun WordPracticeScreen(
     navController: NavHostController,
     topicId: String?,
-    viewModel: PracticeViewModel // THAY ĐỔI 1: Nhận ViewModel, xóa các biến không cần thiết
+    viewModel: PracticeViewModel
 ) {
-    // THAY ĐỔI 2: Lấy trạng thái của chủ đề được chọn từ ViewModel
     val selectedTopic by viewModel.selectedTopic.collectAsState()
 
-    // THAY ĐỔI 3: Dùng LaunchedEffect để yêu cầu ViewModel tải dữ liệu cho chủ đề này
     LaunchedEffect(topicId) {
         if (!topicId.isNullOrEmpty()) {
             viewModel.loadTopicById(topicId)
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFA2EAF8),
-                        Color(0xFFAAFFA7)
-                    )
-                )
-            )
-    ) {
+    AppBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,7 +69,6 @@ fun WordPracticeScreen(
                 )
 
                 Text(
-                    // THAY ĐỔI 4: Sử dụng trạng thái `selectedTopic` từ ViewModel để hiển thị tên
                     text = selectedTopic?.name ?: "Đang tải...",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
