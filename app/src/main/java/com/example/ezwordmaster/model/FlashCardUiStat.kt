@@ -8,5 +8,6 @@ data class FlashCardUiState(
     val LEARNINGWORDS: Int = 0,
     val ISFLIPPED: Boolean = false,
     val ISCOMPLETED: Boolean = false,
-    val STARTTIME: Long = 0L
+    val STARTTIME: Long = 0L,
+    val IS_PROCESSING: Boolean = false
 )

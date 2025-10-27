@@ -2,9 +2,12 @@ package com.example.ezwordmaster.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
-import com.example.ezwordmaster.ui.screens.practice.PracticeViewModel
+import com.example.ezwordmaster.ui.screens.history.HistoryViewModel
 import com.example.ezwordmaster.ui.screens.practice.FlashcardViewModel
+import com.example.ezwordmaster.ui.screens.practice.FlipCardViewModel
+import com.example.ezwordmaster.ui.screens.practice.PracticeViewModel
+import com.example.ezwordmaster.ui.screens.practice.ResultViewModel
+import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
 
 /**
  * Factory này nhận vào cả AppContainer.
@@ -25,10 +28,22 @@ class ViewModelFactory(
             modelClass.isAssignableFrom(PracticeViewModel::class.java) -> {
                 PracticeViewModel(CONTAINER.TOPICREPOSITORY) as T
             }
+
             modelClass.isAssignableFrom(FlashcardViewModel::class.java) -> {
                 FlashcardViewModel(CONTAINER.TOPICREPOSITORY, CONTAINER.STUDYRESULTREPOSITORY) as T
             }
 
+            modelClass.isAssignableFrom(ResultViewModel::class.java) -> {
+                ResultViewModel(CONTAINER.TOPICREPOSITORY, CONTAINER.STUDYRESULTREPOSITORY) as T
+            }
+
+            modelClass.isAssignableFrom(FlipCardViewModel::class.java) -> {
+                FlipCardViewModel(CONTAINER.TOPICREPOSITORY, CONTAINER.STUDYRESULTREPOSITORY) as T
+            }
+
+            modelClass.isAssignableFrom(HistoryViewModel::class.java) -> {
+                HistoryViewModel(CONTAINER.STUDYRESULTREPOSITORY) as T
+            }
             // Thêm các ViewModel khác ở đây...
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

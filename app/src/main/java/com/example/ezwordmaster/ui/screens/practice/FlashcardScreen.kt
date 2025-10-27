@@ -5,18 +5,39 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,57 +45,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.model.Topic
-import com.example.ezwordmaster.model.StudyResult
 import kotlinx.coroutines.delay
-import java.util.UUID
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.alpha
 
 enum class SwipeDirection {
     LEFT, RIGHT
 }
 
 @Composable
-fun FlashcardScreen(navController: NavHostController, topicId: String?, viewModel: FlashcardViewModel) {
+fun FlashcardScreen(
+    navController: NavHostController,
+    topicId: String?,
+    viewModel: FlashcardViewModel
+) {
     val uiState by viewModel.UISTATE.collectAsState()
 
-    var topic by remember { mutableStateOf<Topic?>(null) }
-    var currentIndex by remember { mutableStateOf(0) }
-    var knownWords by remember { mutableStateOf(0) }
-    var learningWords by remember { mutableStateOf(0) }
-    var isCompleted by remember { mutableStateOf(false) }
-    var isFlipped by remember { mutableStateOf(false) } // Trạng thái lật thẻ
-    var swipeDirection by remember { mutableStateOf<SwipeDirection?>(null) } // Hướng vuốt hiện tại
-    var startTime by remember { mutableStateOf(0L) } // Thời gian bắt đầu học
-    var meaningVisible by remember { mutableStateOf(false) } //Đảm bảo nghĩa luôn bị ẩn khi sang từ mới
+    var swipeDirection by remember { mutableStateOf<SwipeDirection?>(null) }
+    var meaningVisible by remember { mutableStateOf(false) }
 
-    // Tải chủ đề theo ID và khởi tạo thời gian bắt đầu
+    // Tải chủ đề theo ID
     LaunchedEffect(topicId) {
-        viewModel.loadTopic(topicId?:"Lỗi không thấy id")
+        viewModel.loadTopic(topicId ?: "Lỗi không thấy id")
     }
 
-    val words = topic?.words ?: emptyList()
-    val currentWord = if (words.isNotEmpty() && currentIndex < words.size) words[currentIndex] else null
+    val words = uiState.WORDS
+    val currentIndex = uiState.CURRENTINDEX
+    val currentWord =
+        if (words.isNotEmpty() && currentIndex < words.size) words[currentIndex] else null
 
-    // Kiểm tra xem tất cả từ đã được xử lý chưa
-    LaunchedEffect(currentIndex, words.size) {
-        if (words.isNotEmpty() && currentIndex >= words.size) {
-            delay(500) // Độ trễ nhỏ để chuyển tiếp mượt mà
-            isCompleted = true
-        }
-    }
-    
     // Đặt lại trạng thái lật và hướng vuốt khi chuyển sang từ tiếp theo
     LaunchedEffect(currentIndex) {
-        isFlipped = false
         meaningVisible = false
         swipeDirection = null
     }
 
-    //kiểm soát việc hiển thị nghĩa
-    LaunchedEffect(isFlipped) {
-        if (isFlipped) {
+    // Kiểm soát việc hiển thị nghĩa
+    LaunchedEffect(uiState.ISFLIPPED) {
+        if (uiState.ISFLIPPED) {
             // Khi lật để xem nghĩa, đợi nửa animation (300ms) rồi mới cho hiện
             delay(300)
             meaningVisible = true
@@ -87,9 +93,11 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
     // Chuyển đến màn hình kết quả khi hoàn thành và lưu kết quả
     LaunchedEffect(uiState.ISCOMPLETED) {
         if (uiState.ISCOMPLETED) {
+            val finalTopicId = uiState.TOPIC?.id ?: topicId ?: "unknown"
             val topicName = uiState.TOPIC?.name ?: "Unknown"
-            // Điều hướng đến màn hình kết quả và xóa các màn hình ôn tập trước đó khỏi stack
-            navController.navigate("result/${topicId}/${topicName}/${uiState.KNOWNWORDS}/${uiState.LEARNINGWORDS}") {
+            val totalWords = uiState.WORDS.size
+
+            navController.navigate("result/${finalTopicId}/${topicName}/${uiState.KNOWNWORDS}/${uiState.LEARNINGWORDS}/${totalWords}") {
                 popUpTo("practice") { inclusive = false }
             }
         }
@@ -124,7 +132,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
                     tint = Color(0xFF4CAF50),
                     modifier = Modifier
                         .size(45.dp)
-                        .clickable { navController.navigate("practice")}
+                        .clickable { navController.navigate("practice") }
                 )
 
                 // Chỉ báo tiến độ
@@ -154,14 +162,14 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
 
-                // Chư nhớ
+                // Chưa nhớ
                 Card(
                     shape = CircleShape,
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF44336)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Text(
-                        text = "$learningWords",
+                        text = "${uiState.LEARNINGWORDS}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -175,7 +183,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Text(
-                        text = "$knownWords",
+                        text = "${uiState.KNOWNWORDS}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -193,27 +201,20 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
                 AnimatedFlashcard(
                     word = currentWord.word ?: "",
                     meaning = currentWord.meaning ?: "",
-                    isFlipped = isFlipped,
+                    isFlipped = uiState.ISFLIPPED,
                     meaningVisible = meaningVisible,
                     swipeDirection = swipeDirection,
-                    onFlip = { isFlipped = !isFlipped },
+                    isEnabled = !uiState.IS_PROCESSING,
+                    onFlip = { viewModel.flipCard() },
                     onSwipeLeft = {
                         // Vuốt trái - Đang học
                         swipeDirection = SwipeDirection.LEFT
-                        learningWords++
-                        // Reset trạng thái NGAY LẬP TỨC trước khi chuyển từ
-                        isFlipped = false
-                        meaningVisible = false
-                        currentIndex++
+                        viewModel.onSwipe(isKnown = false)
                     },
                     onSwipeRight = {
                         // Vuốt phải - Đã nhớ
                         swipeDirection = SwipeDirection.RIGHT
-                        knownWords++
-                        // Reset trạng thái NGAY LẬP TỨC trước khi chuyển từ
-                        isFlipped = false
-                        meaningVisible = false
-                        currentIndex++
+                        viewModel.onSwipe(isKnown = true)
                     }
                 )
             }
@@ -241,9 +242,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
                             .padding(12.dp)
                             .rotate(180f)
                             .clickable {
-                                if (currentIndex > 0) {
-                                    currentIndex--
-                                }
+                                viewModel.goToPreviousWord()
                             }
                     )
                 }
@@ -271,9 +270,7 @@ fun FlashcardScreen(navController: NavHostController, topicId: String?, viewMode
                             .size(48.dp)
                             .padding(12.dp)
                             .clickable {
-                                if (currentIndex < words.size - 1) {
-                                    currentIndex++
-                                }
+                                viewModel.goToNextWord()
                             }
                     )
                 }
@@ -291,6 +288,7 @@ fun AnimatedFlashcard(
     isFlipped: Boolean,
     meaningVisible: Boolean,
     swipeDirection: SwipeDirection?,
+    isEnabled: Boolean,
     onFlip: () -> Unit,
     onSwipeLeft: () -> Unit,
     onSwipeRight: () -> Unit
@@ -301,7 +299,7 @@ fun AnimatedFlashcard(
         animationSpec = tween(durationMillis = 600),
         label = "cardRotation"
     )
-    
+
     // Xác định màu viền dựa trên hướng vuốt
     val borderColor = when (swipeDirection) {
         SwipeDirection.RIGHT -> Color(0xFF4CAF50)
@@ -315,6 +313,7 @@ fun AnimatedFlashcard(
             .fillMaxWidth()
             .aspectRatio(1.2f)
             .pointerInput(Unit) {
+                if (!isEnabled) return@pointerInput
                 detectDragGestures(
                     onDragStart = {
                         // Reset lại quãng đường khi bắt đầu vuốt
@@ -347,10 +346,12 @@ fun AnimatedFlashcard(
             }
             .then(
                 if (borderColor != Color.Transparent) {
-                    Modifier.background(
-                        color = borderColor,
-                        shape = RoundedCornerShape(16.dp)
-                    ).padding(4.dp)
+                    Modifier
+                        .background(
+                            color = borderColor,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(4.dp)
                 } else {
                     Modifier
                 }
@@ -392,7 +393,7 @@ fun AnimatedFlashcard(
                     )
                 }
             }
-            
+
             // Mặt sau (Tiếng Việt) - chỉ hiển thị khi đã lật hoặc đang lật
             if (rotation >= 90f) {
                 Column(

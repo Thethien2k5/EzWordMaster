@@ -77,7 +77,7 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
 
 
     // Lọc và sắp xếp chủ đề
-    remember(TOPICS, filterSortType, searchQuery) {
+    val filteredAndSortedTopics = remember(TOPICS, filterSortType, searchQuery) {
         // 1. Lọc theo thanh tìm kiếm (tên chủ đề)
         val searchedTopics = if (searchQuery.text.isNotBlank()) {
             TOPICS.filter {
@@ -238,11 +238,7 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
                     Spacer(modifier = Modifier.height(16.dp))
                     // Danh sách chủ đề
                     LazyColumn {
-                        val FILTEREDTOPICS = TOPICS.filter {
-                            it.name?.contains(searchQuery.text, ignoreCase = true) ?: false
-                        }
-
-                        items(FILTEREDTOPICS) { topic ->
+                        items(filteredAndSortedTopics) { topic ->
 
                             ExpandableTopicItem(topic, navController = navController)
                             Spacer(modifier = Modifier.height(12.dp))

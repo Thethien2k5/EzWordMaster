@@ -1,8 +1,9 @@
 package com.example.ezwordmaster.domain.repository
 
+import com.example.ezwordmaster.model.StudyResult
 import com.example.ezwordmaster.model.StudyResultsList
 import com.example.ezwordmaster.model.StudyStats
-import com.example.ezwordmaster.model.StudyResult
+import com.example.ezwordmaster.model.TodayProgress
 
 /**
  * Interface cho StudyResultRepository.
@@ -53,4 +54,15 @@ interface IStudyResultRepository {
      * Xóa tất cả các kết quả học tập khỏi nguồn dữ liệu.
      */
     fun clearAllResults()
+
+    /**
+     * Lấy tất cả kết quả ôn tập trong ngày hôm nay
+     * Nếu nhiều lần ôn tập trong ngày thì cộng số từ vựng lại
+     */
+    fun getTodayStudyProgress(topicId: String): TodayProgress
+
+    /**
+     * THÊM VÀO: Lấy tổng tiến trình học của TẤT CẢ chủ đề trong ngày
+     */
+    fun getOverallTodayProgress(): TodayProgress
 }

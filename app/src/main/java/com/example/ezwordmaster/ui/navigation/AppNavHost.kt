@@ -1,34 +1,34 @@
 package com.example.ezwordmaster.ui.navigation
 
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.ezwordmaster.ui.ViewModelFactory
+import com.example.ezwordmaster.ui.screens.HomeScreen
+import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.about.AboutScreen
 import com.example.ezwordmaster.ui.screens.help.HelpScreen
+import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
 import com.example.ezwordmaster.ui.screens.notification.NotificationScreen
-import com.example.ezwordmaster.ui.screens.HomeScreen
-import com.example.ezwordmaster.ui.screens.quiz.QuizScreen
-import com.example.ezwordmaster.ui.screens.quiz.QuizSettingScreen
-import com.example.ezwordmaster.ui.screens.quiz.TrueFalseQuizScreen
+import com.example.ezwordmaster.ui.screens.practice.FlashcardScreen
+import com.example.ezwordmaster.ui.screens.practice.FlipCardScreen
+import com.example.ezwordmaster.ui.screens.practice.FlipResultScreen
+import com.example.ezwordmaster.ui.screens.practice.PracticeScreen
+import com.example.ezwordmaster.ui.screens.practice.ResultScreen
+import com.example.ezwordmaster.ui.screens.practice.WordPracticeScreen
+import com.example.ezwordmaster.ui.screens.practice.WordSelectionScreen
 import com.example.ezwordmaster.ui.screens.quiz.EssayQuizScreen
 import com.example.ezwordmaster.ui.screens.quiz.MultiChoiceQuizScreen
 import com.example.ezwordmaster.ui.screens.quiz.QuizResultScreen
-import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
-import com.example.ezwordmaster.ui.screens.practice.PracticeScreen
-import com.example.ezwordmaster.ui.screens.practice.WordPracticeScreen
-import com.example.ezwordmaster.ui.screens.practice.FlashcardScreen
-import com.example.ezwordmaster.ui.screens.practice.ResultScreen
-import com.example.ezwordmaster.ui.screens.practice.WordSelectionScreen
-import com.example.ezwordmaster.ui.screens.practice.FlipCardScreen
-import com.example.ezwordmaster.ui.screens.practice.FlipResultScreen
-import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
-import com.example.ezwordmaster.ui.screens.IntroScreen
+import com.example.ezwordmaster.ui.screens.quiz.QuizScreen
+import com.example.ezwordmaster.ui.screens.quiz.QuizSettingScreen
+import com.example.ezwordmaster.ui.screens.quiz.TrueFalseQuizScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
-import com.example.ezwordmaster.ui.ViewModelFactory
+import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 
 @Composable
 fun AppNavHost(
@@ -51,51 +51,110 @@ fun AppNavHost(
 
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
         //danh sách chủ đề
-        composable("topicmanagementscreen") { TopicManagementScreen(navController = navController, viewModel = viewModel(factory = factory)) }
+        composable("topicmanagementscreen") {
+            TopicManagementScreen(
+                navController = navController,
+                viewModel = viewModel(factory = factory)
+            )
+        }
         // chỉnh sửa chủ đề cụ để
         composable("edittopic/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
-            EditTopicScreen(navController = navController, topicId = topicId, viewModel = viewModel(factory = factory))
+            EditTopicScreen(
+                navController = navController,
+                topicId = topicId,
+                viewModel = viewModel(factory = factory)
+            )
         }
 
         // ======= ÔN TẬP =======///
         // chọn chủ đề muốn ôn tập
-        composable("practice") { PracticeScreen(navController = navController, viewModel = viewModel(factory = factory)) }
+        composable("practice") {
+            PracticeScreen(
+                navController = navController,
+                viewModel = viewModel(factory = factory)
+            )
+        }
         // chọn chế độ ôn tập / lịch sử ôn tập
         composable("wordpractice/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
-            WordPracticeScreen(navController = navController, topicId = topicId, viewModel = viewModel(factory = factory))
+            WordPracticeScreen(
+                navController = navController,
+                topicId = topicId,
+                viewModel = viewModel(factory = factory)
+            )
         }
         //======== FLASH CARD =================
         // chế độ ôn tập flash card
         composable("flashcard/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
-            FlashcardScreen(navController = navController, topicId = topicId, viewModel = viewModel(factory = factory))
+            FlashcardScreen(
+                navController = navController,
+                topicId = topicId,
+                viewModel = viewModel(factory = factory)
+            )
         }
         // kết quả flashcard
-        composable("result/{topicId}/{knownWords}/{learningWords}") { backStackEntry ->
+        composable("result/{topicId}/{topicName}/{knownWords}/{learningWords}/{totalWords}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
+            val topicName = backStackEntry.arguments?.getString("topicName")
             val knownWords = backStackEntry.arguments?.getString("knownWords")?.toIntOrNull() ?: 0
-            val learningWords = backStackEntry.arguments?.getString("learningWords")?.toIntOrNull() ?: 0
-            ResultScreen(navController = navController, topicId = topicId, knownWords = knownWords, learningWords = learningWords, viewModel = viewModel(factory = factory))
+            val learningWords =
+                backStackEntry.arguments?.getString("learningWords")?.toIntOrNull() ?: 0
+            val totalWords = backStackEntry.arguments?.getString("totalWords")?.toIntOrNull() ?: 0
+
+            // Dùng factory để tạo/lấy ViewModel và truyền vào
+            ResultScreen(
+                navController = navController,
+                topicId = topicId,
+                topicName = topicName,
+                knownWords = knownWords,
+                learningWords = learningWords,
+                totalWords = totalWords,
+                viewModel = viewModel(factory = factory)
+            )
+        }
+        //lịch sử
+        composable("studyhistory") {
+            StudyHistoryScreen(
+                navController = navController,
+                viewModel = viewModel(factory = factory)
+            )
         }
         //================= LẬT THẺ ===========================
         // chế độ ôn tập lật thẻ
         composable("wordselection/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
-            WordSelectionScreen(navController = navController, topicId = topicId,viewModel = viewModel(factory = factory))
+            WordSelectionScreen(
+                navController = navController,
+                topicId = topicId,
+                viewModel = viewModel(factory = factory)
+            )
         }
         // bắt đầu lật thẻ
         composable("flipcard/{topicId}/{wordsJson}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             val wordsJson = backStackEntry.arguments?.getString("wordsJson")
-            FlipCardScreen(navController = navController, topicId = topicId, wordsJson = wordsJson, viewModel = viewModel(factory = factory))
+            FlipCardScreen(
+                navController = navController,
+                topicId = topicId,
+                wordsJson = wordsJson,
+                viewModel = viewModel(factory = factory)
+            )
         }
         //kết quả thể thẻ
-        composable("flipresult/{topicId}/{flippedCount}") { backStackEntry ->
+        composable("flipresult/{topicId}/{topicName}/{matchedPairs}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
-            val flippedCount = backStackEntry.arguments?.getString("flippedCount")?.toIntOrNull() ?: 0
-            FlipResultScreen(navController = navController, topicId = topicId, flippedCount = flippedCount)
+            val topicName = backStackEntry.arguments?.getString("topicName")
+            val matchedPairs =
+                backStackEntry.arguments?.getString("matchedPairs")?.toIntOrNull() ?: 0
+
+            FlipResultScreen(
+                navController = navController,
+                topicId = topicId,
+                topicName = topicName, // Truyền topicName vào
+                matchedPairs = matchedPairs // Sửa tên biến cho nhất quán
+            )
         }
 
         //*** ======= QUIZ ======= ***///
@@ -120,10 +179,6 @@ fun AppNavHost(
             QuizResultScreen(navController, score, total, emptyList())
 
 
-        //*** ======= LỊCH SỬ ======= ***///
-        composable("studyhistory") {
-            StudyHistoryScreen(navController = navController)
         }
     }
-}
 }

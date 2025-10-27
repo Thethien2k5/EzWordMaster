@@ -2,14 +2,36 @@ package com.example.ezwordmaster.ui.screens.practice
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -17,29 +39,39 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.request.ImageRequest
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.model.Topic
-import com.example.ezwordmaster.data.repository.TopicRepositoryImpl
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun ResultScreen(
     navController: NavHostController,
     topicId: String?,
     knownWords: Int,
+    totalWords: Int,
+    topicName: String?,
     learningWords: Int,
-    viewModel: PracticeViewModel
+    viewModel: ResultViewModel
 ) {
-    val TOPIC by viewModel.selectedTopic.collectAsState()
 
-    // Tải chủ đề theo ID
+    // Tải chủ đề và thông tin học tập mới nhất
     LaunchedEffect(topicId) {
         if (!topicId.isNullOrEmpty()) {
-            viewModel.loadTopicById(topicId)
+            viewModel.getLatestStudyInfo(topicId)
         }
     }
 
-    val TOTALWORDS = TOPIC?.words?.size ?: 0
-    val PROGRESSPERCENTAGE = if (TOTALWORDS > 0) (knownWords * 100) / TOTALWORDS else 0
+    val progressPercentage = viewModel.calculateProgressPercentage(knownWords, totalWords)
+    val motivationalMessage = viewModel.getMotivationalMessage(progressPercentage)
+    val animationResId = viewModel.getAnimationResId(progressPercentage)
+    // State để kiểm soát hiệu ứng pháo hoa
+    var showConfetti by remember { mutableStateOf(progressPercentage > 70) }
 
     Box(
         modifier = Modifier
@@ -53,30 +85,74 @@ fun ResultScreen(
                 )
             )
     ) {
+        // Hiệu ứng pháo hoa (chỉ hiện khi > 70%)
+        if (showConfetti) {
+            KonfettiView(
+                modifier = Modifier.fillMaxSize(),
+                parties = listOf(
+                    Party(
+                        speed = 0f,
+                        maxSpeed = 30f,
+                        damping = 0.9f,
+                        spread = 360,
+                        colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                        emitter = Emitter(duration = 3, TimeUnit.SECONDS).max(100),
+                        position = Position.Relative(0.5, 0.3)
+                    )
+                )
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header với nút back và logo
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Logo ứng dụng
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(70.dp)
-                )
+            // Header với logo
+            Box {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo),
+                        contentDescription = "App Logo",
+                        modifier = Modifier.size(70.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Hiển thị GIF động dựa trên kết quả
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val context = LocalContext.current
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(animationResId)
+                            .decoderFactory(GifDecoder.Factory())
+                            .build(),
+                        contentDescription = "Result Animation",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .offset(y = 16.dp),
+
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Tiêu đề
+            // Thông điệp động
             Text(
-                text = "Chúc mừng đã hoàn thành",
+                text = motivationalMessage,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -94,7 +170,7 @@ fun ResultScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             // Vòng tròn tiến độ và thống kê
             Row(
@@ -107,14 +183,18 @@ fun ResultScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        progress = { PROGRESSPERCENTAGE / 100f },
+                        progress = { progressPercentage / 100f },
                         modifier = Modifier.size(120.dp),
-                        color = Color(0xFF4CAF50),
+                        color = when {
+                            progressPercentage > 70 -> Color(0xFF4CAF50)
+                            progressPercentage >= 50 -> Color(0xFFFFA726)
+                            else -> Color(0xFFF44336)
+                        },
                         strokeWidth = 8.dp,
                         trackColor = Color.White
                     )
                     Text(
-                        text = "$PROGRESSPERCENTAGE%",
+                        text = "$progressPercentage%",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -178,6 +258,41 @@ fun ResultScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+//            // Hiển thị thông tin bài ôn tập mới nhất
+//            latestStudyInfo?.let { info ->
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    shape = RoundedCornerShape(16.dp),
+//                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.8f)),
+//                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp),
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//                        Text(
+//                            text = "Lần ôn tập gần nhất",
+//                            fontSize = 16.sp,
+//                            fontWeight = FontWeight.Bold,
+//                            color = Color.Black
+//                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        Text(
+//                            text = "Ngày: ${info.day}",
+//                            fontSize = 14.sp,
+//                            color = Color.Gray
+//                        )
+//                        Text(
+//                            text = "Kết quả: ${info.knownWords}/${info.totalWords} từ",
+//                            fontSize = 14.sp,
+//                            color = Color.Gray
+//                        )
+//                    }
+//                }
+//            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -264,4 +379,3 @@ fun ResultScreen(
         }
     }
 }
-
