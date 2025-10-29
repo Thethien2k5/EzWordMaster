@@ -48,7 +48,6 @@ import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.FilterSortType
 import com.example.ezwordmaster.model.Topic
 import com.example.ezwordmaster.ui.common.AppBackground
-import com.example.ezwordmaster.ui.common.HeaderBar
 import com.example.ezwordmaster.ui.common.SortDropdownMenu
 
 @Composable
@@ -86,23 +85,14 @@ fun PracticeScreen(navController: NavHostController, viewModel: PracticeViewMode
     AppBackground {
         Column {
             Spacer(modifier = Modifier.height(16.dp))
-            // *** ======= NÚT QUAY VỀ + TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
-            HeaderBar(
-                navController = navController,
-                text = "Ôn tập",
-                searchQuery = searchQuery,
-                onSearchQueryChange = { newQuery ->
-                    searchQuery = newQuery
-                },
-                showSearchHeader = true
-            )
+            // *** ======= TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
 
             Spacer(modifier = Modifier.height(37.dp))
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-                    .offset(y = (-80).dp)
+                    .offset(y = (-64).dp)
             ) {
                 // ============= SẮP XẾP ======================
                 SortDropdownMenu(

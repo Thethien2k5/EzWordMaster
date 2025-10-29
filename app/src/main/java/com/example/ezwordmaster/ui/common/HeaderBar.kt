@@ -30,17 +30,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.ezwordmaster.R
 
+
 @Composable
-fun BackBar(navController: NavController, text: String) {
+fun NameBar(text: String) {
     Row {
-        Image(
-            painter = painterResource(id = R.drawable.return_),
-            contentDescription = "Back",
-            modifier = Modifier
-                .size(45.dp)
-                .offset(10.dp)
-                .clickable { navController.navigate("home") }
-        )
         Text(
             text = text,
             modifier = Modifier
@@ -55,6 +48,22 @@ fun BackBar(navController: NavController, text: String) {
                 )
             )
         )
+
+    }
+}
+
+@Composable
+fun BackBar(navController: NavController, text: String) {
+    Row {
+        Image(
+            painter = painterResource(id = R.drawable.return_),
+            contentDescription = "Back",
+            modifier = Modifier
+                .size(45.dp)
+                .offset(10.dp)
+                .clickable { navController.popBackStack() }
+        )
+        NameBar(text)
 
     }
 }

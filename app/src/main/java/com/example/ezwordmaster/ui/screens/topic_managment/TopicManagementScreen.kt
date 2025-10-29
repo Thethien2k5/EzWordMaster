@@ -58,7 +58,6 @@ import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.FilterSortType
 import com.example.ezwordmaster.model.Topic
 import com.example.ezwordmaster.ui.common.AppBackground
-import com.example.ezwordmaster.ui.common.BackBar
 import com.example.ezwordmaster.ui.common.Menu
 import kotlinx.coroutines.launch
 
@@ -119,13 +118,12 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
                     .padding(paddingValues)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                // *** ======= NÚT QUAY VỀ + TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
-                // Back button
-                BackBar(navController = navController, "Quản lý")
+                // *** ======= TÌM KIẾM + KÍNH LÚP + LOGO ======= *** //
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .offset(30.dp, (-43).dp),
+                        .offset(30.dp, (-39).dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

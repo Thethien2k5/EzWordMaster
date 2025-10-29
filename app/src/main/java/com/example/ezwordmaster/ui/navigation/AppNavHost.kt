@@ -7,8 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.ui.ViewModelFactory
-import com.example.ezwordmaster.ui.screens.HomeScreen
 import com.example.ezwordmaster.ui.screens.IntroScreen
+import com.example.ezwordmaster.ui.screens.MainHomeScreen
 import com.example.ezwordmaster.ui.screens.about.AboutScreen
 import com.example.ezwordmaster.ui.screens.help.HelpScreen
 import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
@@ -17,6 +17,7 @@ import com.example.ezwordmaster.ui.screens.practice.FlashcardScreen
 import com.example.ezwordmaster.ui.screens.practice.FlipCardScreen
 import com.example.ezwordmaster.ui.screens.practice.FlipResultScreen
 import com.example.ezwordmaster.ui.screens.practice.PracticeScreen
+import com.example.ezwordmaster.ui.screens.practice.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.practice.ResultScreen
 import com.example.ezwordmaster.ui.screens.practice.WordPracticeScreen
 import com.example.ezwordmaster.ui.screens.practice.WordSelectionScreen
@@ -27,8 +28,10 @@ import com.example.ezwordmaster.ui.screens.quiz.QuizScreen
 import com.example.ezwordmaster.ui.screens.quiz.QuizSettingScreen
 import com.example.ezwordmaster.ui.screens.quiz.TrueFalseQuizScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
+import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
+import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
 
 @Composable
 fun AppNavHost(
@@ -37,15 +40,30 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "intro"
+        startDestination = "home"
     ) {
         //*** ======= HOME và VÀI THỨ KHÁC ======= ***///
         composable("intro") { IntroScreen(navController = navController) }
-        composable("home") { HomeScreen(navController = navController) }
+//        composable("home") { HomeScreen(navController = navController) }
+
+        composable("home") {
+            MainHomeScreen(
+                navController = navController,
+                // Chỉ định rõ loại ViewModel cho từng tham số
+                topicViewModel = viewModel<TopicViewModel>(factory = factory),
+                practiceViewModel = viewModel<PracticeViewModel>(factory = factory),
+                settingsViewModel = viewModel<SettingsViewModel>(factory = factory)
+            )
+        }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }
 //        composable("translate") { TranslateScreen(navController = navController) }
-        composable("settings") { SettingsScreen(navController = navController) }
+        composable("settings") {
+            SettingsScreen(
+                navController = navController,
+                viewModel = viewModel(factory = factory)
+            )
+        }
         composable("notificationscreen") { NotificationScreen(navController = navController) }
 
 

@@ -7,6 +7,7 @@ import com.example.ezwordmaster.ui.screens.practice.FlashcardViewModel
 import com.example.ezwordmaster.ui.screens.practice.FlipCardViewModel
 import com.example.ezwordmaster.ui.screens.practice.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.practice.ResultViewModel
+import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
 
 /**
@@ -43,6 +44,10 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(HistoryViewModel::class.java) -> {
                 HistoryViewModel(CONTAINER.STUDYRESULTREPOSITORY) as T
+            }
+
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> {
+                SettingsViewModel(CONTAINER.settingsRepository) as T
             }
             // Thêm các ViewModel khác ở đây...
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
