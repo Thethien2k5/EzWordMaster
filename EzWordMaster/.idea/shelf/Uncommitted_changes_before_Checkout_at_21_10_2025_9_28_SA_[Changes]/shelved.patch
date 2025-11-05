@@ -1,0 +1,30 @@
+Index: app/src/main/java/com/example/ezwordmaster/ui/navigation/AppNavHost.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ezwordmaster.ui.navigation\r\n\r\nimport androidx.navigation.compose.NavHost\r\nimport androidx.navigation.compose.composable\r\nimport androidx.navigation.NavHostController\r\nimport androidx.navigation.compose.rememberNavController\r\nimport androidx.compose.runtime.Composable\r\nimport com.example.ezwordmaster.ui.screens.IntroScreen\r\nimport com.example.ezwordmaster.ui.screens.HomeScreen\r\nimport com.example.ezwordmaster.ui.screens.TopicManagementScreen\r\nimport com.example.ezwordmaster.ui.quiz.QuizScreen\r\nimport com.example.ezwordmaster.ui.quiz.QuizSettingScreen\r\nimport com.example.ezwordmaster.ui.quiz.TrueFalseQuizScreen\r\nimport com.example.ezwordmaster.ui.quiz.EssayQuizScreen\r\nimport com.example.ezwordmaster.ui.quiz.MultiChoiceQuizScreen\r\nimport com.example.ezwordmaster.ui.quiz.QuizResultScreen\r\n\r\n\r\n// **** Định nghĩa đường đi giữa các trang *****\r\n@Composable\r\nfun AppNavHost(\r\n    navController: NavHostController = rememberNavController() //  tạo mặc định\r\n) {\r\n    NavHost(\r\n        navController = navController,\r\n        startDestination = \"intro\"\r\n    ) {\r\n        composable(\"intro\") { IntroScreen(navController = navController) }\r\n        composable(\"home\") { HomeScreen(navController = navController) }\r\n        composable(\"topicmanagementscreen\") { TopicManagementScreen(navController = navController) }\r\n        composable(\"quiz_setting\") { QuizSettingScreen(navController) }\r\n        composable(\"quiz\") { QuizScreen() }\r\n        composable(\"quiz_true_false/{showAnswer}\") { backStackEntry ->\r\n            val showAnswer = backStackEntry.arguments?.getString(\"showAnswer\")?.toBoolean() ?: true\r\n            TrueFalseQuizScreen(navController, showAnswer)\r\n        }\r\n        composable(\"quiz_essay/{showAnswer}\") { backStackEntry ->\r\n            val showAnswer = backStackEntry.arguments?.getString(\"showAnswer\")?.toBoolean() ?: true\r\n            EssayQuizScreen(navController, showAnswer)\r\n        }\r\n        composable(\"quiz_multi/{showAnswer}\") { backStackEntry ->\r\n            val showAnswer = backStackEntry.arguments?.getString(\"showAnswer\")?.toBoolean() ?: true\r\n            MultiChoiceQuizScreen(navController, showAnswer)\r\n        }\r\n        composable(\"quiz_result/{score}/{total}\") { backStackEntry ->\r\n            val score = backStackEntry.arguments?.getString(\"score\")?.toIntOrNull() ?: 0\r\n            val total = backStackEntry.arguments?.getString(\"total\")?.toIntOrNull() ?: 0\r\n            // Tạm thời truyền danh sách rỗng, sẽ cập nhật sau\r\n            QuizResultScreen(navController, score, total, emptyList())\r\n        }\r\n\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/ezwordmaster/ui/navigation/AppNavHost.kt b/app/src/main/java/com/example/ezwordmaster/ui/navigation/AppNavHost.kt
+--- a/app/src/main/java/com/example/ezwordmaster/ui/navigation/AppNavHost.kt	(revision 1ac70d65158226251ba9bc0aaab290d453f7119f)
++++ b/app/src/main/java/com/example/ezwordmaster/ui/navigation/AppNavHost.kt	(date 1760967523400)
+@@ -7,7 +7,7 @@
+ import androidx.compose.runtime.Composable
+ import com.example.ezwordmaster.ui.screens.IntroScreen
+ import com.example.ezwordmaster.ui.screens.HomeScreen
+-import com.example.ezwordmaster.ui.screens.TopicManagementScreen
++//import com.example.ezwordmaster.ui.screens.TopicManagementScreen
+ import com.example.ezwordmaster.ui.quiz.QuizScreen
+ import com.example.ezwordmaster.ui.quiz.QuizSettingScreen
+ import com.example.ezwordmaster.ui.quiz.TrueFalseQuizScreen
+@@ -27,7 +27,9 @@
+     ) {
+         composable("intro") { IntroScreen(navController = navController) }
+         composable("home") { HomeScreen(navController = navController) }
+-        composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
++//        composable("topicmanagementscreen") { TopicManagementScreen(navController = navController) }
++
++        // *** ======= QUIZ ======= *** //
+         composable("quiz_setting") { QuizSettingScreen(navController) }
+         composable("quiz") { QuizScreen() }
+         composable("quiz_true_false/{showAnswer}") { backStackEntry ->
