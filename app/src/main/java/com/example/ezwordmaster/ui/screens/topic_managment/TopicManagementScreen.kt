@@ -74,7 +74,6 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
     var showDropdown by remember { mutableStateOf(false) }
     var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
 
-
     // Lọc và sắp xếp chủ đề
     val filteredAndSortedTopics = remember(TOPICS, filterSortType, searchQuery) {
         // 1. Lọc theo thanh tìm kiếm (tên chủ đề)
@@ -235,7 +234,11 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     // Danh sách chủ đề
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
+                    ) {
                         items(filteredAndSortedTopics) { topic ->
 
                             ExpandableTopicItem(topic, navController = navController)
@@ -341,7 +344,7 @@ fun ExpandableTopicItem(topic: Topic, navController: NavHostController) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 400.dp) // giới hạn chiều cao, phần còn lại cuộn
+                        .heightIn(max = 270.dp) // giới hạn chiều cao, phần còn lại cuộn
                 ) {
                     items(topic.words) { word ->
                         Text(
