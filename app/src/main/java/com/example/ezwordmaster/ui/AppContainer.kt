@@ -14,12 +14,12 @@ import com.example.ezwordmaster.domain.repository.ITopicRepository
 class AppContainer(private val context: Context) {
 
     // Tạo TopicRepository
-    val TOPICREPOSITORY: ITopicRepository by lazy {
+    val topicRepository: ITopicRepository by lazy {
         TopicRepositoryImpl(context)
     }
 
     // Tạo StudyResultRepository
-    val STUDYRESULTREPOSITORY: IStudyResultRepository by lazy {
+    val studyResultRepository: IStudyResultRepository by lazy {
         StudyResultRepositoryImpl(context)
     }
 

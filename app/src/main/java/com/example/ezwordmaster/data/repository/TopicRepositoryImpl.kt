@@ -2,14 +2,14 @@ package com.example.ezwordmaster.data.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.ezwordmaster.domain.repository.ITopicRepository
 import com.example.ezwordmaster.model.Topic
 import com.example.ezwordmaster.model.Word
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import com.example.ezwordmaster.domain.repository.ITopicRepository
 
-class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
+class TopicRepositoryImpl(private val context: Context) : ITopicRepository {
 
     private val FILE_NAME = "topics.json"
     private val json = Json { prettyPrint = true }
@@ -18,14 +18,15 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
     private fun getTopicsFile(): File = File(context.filesDir, FILE_NAME)
 
     // Kiểm tra file có tồn tại không
-    override fun isTopicsFileExists(): Boolean {
+    override suspend fun isTopicsFileExists(): Boolean {
         val exists = getTopicsFile().exists()
         Log.d("TopicRepo", "File tồn tại: $exists")
         return exists
     }
+
     // Đọc dữ liệu từ file
     // THÊM "override" vào tất cả các hàm public được định nghĩa trong interface
-    override  fun loadTopics(): List<Topic> {
+    override suspend fun loadTopics(): List<Topic> {
         createTopicsFileIfMissing()
         val file = getTopicsFile()
 
@@ -37,8 +38,9 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
             emptyList()
         }
     }
+
     // Ghi đè toàn bộ danh sách (chỉ dùng nội bộ)
-    private fun saveTopics(topics: List<Topic>) {
+    private suspend fun saveTopics(topics: List<Topic>) {
         try {
             val jsonString = json.encodeToString(topics)
             getTopicsFile().writeText(jsonString)
@@ -47,9 +49,10 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
             Log.e("TopicRepo", " Lỗi khi ghi file: ${e.message}")
         }
     }
+
     //***** ====== TẠO ============ ********
     //  Tạo file mặc định nếu chưa có
-    override fun createTopicsFileIfMissing() {
+    override suspend fun createTopicsFileIfMissing() {
         val file = getTopicsFile()
         if (!file.exists()) {
             val defaultTopics = listOf(
@@ -80,7 +83,7 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
     }
 
     // Tạo ID mới cho topic, tạo id nhỏ ch tồn tại ( lấy đầy khoảng trống id )
-    override fun generateNewTopicId(): String {
+    override suspend fun generateNewTopicId(): String {
         val topics = loadTopics()
         val existingIds = topics.mapNotNull { it.id?.toIntOrNull() }.sorted()
 
@@ -97,7 +100,7 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
 
     //******* ========== THÊM =================== **************
     //  Thêm hoặc cập nhật một topic (thông minh)
-    override  fun addOrUpdateTopic(newTopic: Topic) {
+    override suspend fun addOrUpdateTopic(newTopic: Topic) {
         val currentTopics = loadTopics().toMutableList()
         val existing = currentTopics.find {
             it.id == newTopic.id || it.name.equals(newTopic.name, ignoreCase = true)
@@ -124,10 +127,14 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
         }
         saveTopics(currentTopics)
     }
+
     // Thêm từ vào chủ đề
-    override fun addWordToTopic(topicId: String, word: Word) {
+    override suspend fun addWordToTopic(topicId: String, word: Word) {
         if (wordExistsInTopic(topicId, word)) {
-            Log.d("TopicRepo", "Từ '${word.word}' đã tồn tại trong chủ đề. Thao tác thêm mới bị hủy.")
+            Log.d(
+                "TopicRepo",
+                "Từ '${word.word}' đã tồn tại trong chủ đề. Thao tác thêm mới bị hủy."
+            )
             // Quan trọng: Dừng hàm nếu từ đã tồn tại
             return
         }
@@ -142,8 +149,9 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
             Log.d("TopicRepo", "➕ Đã thêm từ '${word.word}' vào chủ đề")
         }
     }
+
     //Thêm tên chủ đề mới
-    override  fun addNameTopic(newName: String) {
+    override suspend fun addNameTopic(newName: String) {
         if (topicNameExists(newName)) {
             Log.d("TopicRepo", "Tên chủ đề '$newName' đã tồn tại. Thao tác thêm mới bị hủy.")
             return
@@ -166,13 +174,14 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
 
     //*** ================= XÓA ===============================
     //  Xóa một topic theo id
-    override fun deleteTopicById(id: String) {
+    override suspend fun deleteTopicById(id: String) {
         val currentTopics = loadTopics().filterNot { it.id == id }
         saveTopics(currentTopics)
         Log.d("TopicRepo", "🗑 Đã xóa chủ đề có id=$id")
     }
+
     // Xóa từ khỏi chủ đề
-    override  fun deleteWordFromTopic(topicId: String, word: Word) {
+    override suspend fun deleteWordFromTopic(topicId: String, word: Word) {
         val topics = loadTopics().toMutableList()
         val index = topics.indexOfFirst { it.id == topicId }
 
@@ -188,7 +197,7 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
 
     // *** =============== CẬP NHẬT  =========================
     // Cập nhật tên chủ đề
-    override fun updateTopicName(id: String, newName: String) {
+    override suspend fun updateTopicName(id: String, newName: String) {
         val topics = loadTopics().toMutableList()
         val index = topics.indexOfFirst { it.id == id }
 
@@ -200,7 +209,7 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
     }
 
     // Cập nhật từ trong chủ đề
-    override fun updateWordInTopic(topicId: String, oldWord: Word, newWord: Word) {
+    override suspend fun updateWordInTopic(topicId: String, oldWord: Word, newWord: Word) {
         val topics = loadTopics().toMutableList()
         val index = topics.indexOfFirst { it.id == topicId }
 
@@ -220,16 +229,16 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository{
     }
 
     // Lấy một topic theo ID
-    override  fun getTopicById(id: String): Topic? {
+    override suspend fun getTopicById(id: String): Topic? {
         return loadTopics().find { it.id == id }
     }
 
-    override fun topicNameExists(name: String): Boolean {
+    override suspend fun topicNameExists(name: String): Boolean {
         val allTopics = loadTopics()
         return allTopics.any { it.name.equals(name, ignoreCase = true) }
     }
 
-    override fun wordExistsInTopic(topicId: String, word: Word): Boolean {
+    override suspend fun wordExistsInTopic(topicId: String, word: Word): Boolean {
         val topic = getTopicById(topicId)
         return topic?.words?.any {
             // Kiểm tra cả từ và nghĩa để xác định sự trùng lặp

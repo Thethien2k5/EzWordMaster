@@ -1,7 +1,13 @@
 package com.example.ezwordmaster.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,7 +41,7 @@ fun IntroScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = { navController.navigate("home/MANAGEMENT") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF3578F4),
                     contentColor = Color(0xFFFFFFFF)

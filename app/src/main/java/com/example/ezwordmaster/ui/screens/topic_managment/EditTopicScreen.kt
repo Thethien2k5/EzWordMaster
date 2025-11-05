@@ -1,18 +1,45 @@
 package com.example.ezwordmaster.ui.screens.topic_managment
 
-import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -22,6 +49,7 @@ import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.Word
 import com.example.ezwordmaster.ui.common.AppBackground
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +58,7 @@ fun EditTopicScreen(
     topicId: String,
     viewModel: TopicViewModel
 ) {
-    val TOPIC by viewModel.SELECTEDTOPIC.collectAsState()
+    val TOPIC by viewModel.selectedTopic.collectAsState()
 
     val TOASTMESSAGE by viewModel.toastMessage.collectAsState()
     val SNACKBARHOSTSTATE = remember { SnackbarHostState() }
@@ -61,7 +89,7 @@ fun EditTopicScreen(
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = SNACKBARHOSTSTATE) },
             containerColor = Color.Transparent
-            ) {paddingValues ->
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -72,190 +100,191 @@ fun EditTopicScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Nút quay lại
-                Image(
-                    painter = painterResource(id = R.drawable.return_),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable { navController.popBackStack()}
-                )
-
-                // Tên chủ đề + Icon sửa
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = TOPIC?.name ?: "",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_edit),
-                        contentDescription = "Edit name",
+                    // Nút quay lại
+                    Image(
+                        painter = painterResource(id = R.drawable.return_),
+                        contentDescription = "Back",
                         modifier = Modifier
-                            .size(24.dp)
-                            .clickable { showEditNameDialog = true },
-                        tint = Color(0xFF00BCD4)
+                            .size(40.dp)
+                            .clickable { navController.navigate("home/MANAGEMENT") }
                     )
-                }
 
-                // Icon xóa chủ đề
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_delete),
-                    contentDescription = "Delete topic",
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { showDeleteTopicDialog = true },
-                    tint = Color.Red
-                )
-            }
-
-            // Thanh tìm kiếm
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Tìm kiếm từ vựng", color = Color.Gray) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedBorderColor = Color(0xFF00BCD4),
-                    unfocusedBorderColor = Color.LightGray
-                ),
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.magnifying_glass),
-                        contentDescription = "Search",
-                        tint = Color(0xFF00BCD4)
-                    )
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Nút thêm từ vựng
-            Button(
-                onClick = { showAddWordDialog = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00BCD4)
-                )
-            ) {
-                Text(
-                    "Thêm từ vựng",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Danh sách từ vựng
-            TOPIC?.let { currentTopic ->
-                val filteredWords = currentTopic.words.filter {
-                    it.word?.contains(searchQuery.text, ignoreCase = true) ?: false ||
-                            it.meaning?.contains(searchQuery.text, ignoreCase = true) ?: false
-                }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    items(filteredWords) { word ->
-                        WordItem(
-                            word = word,
-                            onClick = {
-                                selectedWord = word
-                                showEditWordDialog = true
-                            }
+                    // Tên chủ đề + Icon sửa
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = TOPIC?.name ?: "",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_edit),
+                            contentDescription = "Edit name",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { showEditNameDialog = true },
+                            tint = Color(0xFF00BCD4)
+                        )
+                    }
+
+                    // Icon xóa chủ đề
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_delete),
+                        contentDescription = "Delete topic",
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable { showDeleteTopicDialog = true },
+                        tint = Color.Red
+                    )
+                }
+
+                // Thanh tìm kiếm
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Tìm kiếm từ vựng", color = Color.Gray) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF00BCD4),
+                        unfocusedBorderColor = Color.LightGray
+                    ),
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.magnifying_glass),
+                            contentDescription = "Search",
+                            tint = Color(0xFF00BCD4)
+                        )
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Nút thêm từ vựng
+                Button(
+                    onClick = { showAddWordDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00BCD4)
+                    )
+                ) {
+                    Text(
+                        "Thêm từ vựng",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Danh sách từ vựng
+                TOPIC?.let { currentTopic ->
+                    val filteredWords = currentTopic.words.filter {
+                        it.word?.contains(searchQuery.text, ignoreCase = true) ?: false ||
+                                it.meaning?.contains(searchQuery.text, ignoreCase = true) ?: false
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        items(filteredWords) { word ->
+                            WordItem(
+                                word = word,
+                                onClick = {
+                                    selectedWord = word
+                                    showEditWordDialog = true
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
                 }
             }
         }
-    }
 
-    // Dialog xác nhận xóa chủ đề
-    if (showDeleteTopicDialog) {
-        ConfirmDeleteDialog(
-            title = "Xác nhận xóa chủ đề",
-            message = "Bạn có chắc chắn muốn xóa chủ đề này không?",
-            onDismiss = { showDeleteTopicDialog = false },
-            onConfirm = {
-                viewModel.deleteTopicById(topicId)
-                showDeleteTopicDialog = false
-                navController.popBackStack()
-            }
-        )
-    }
+        // Dialog xác nhận xóa chủ đề
+        if (showDeleteTopicDialog) {
+            ConfirmDeleteDialog(
+                title = "Xác nhận xóa chủ đề",
+                message = "Bạn có chắc chắn muốn xóa chủ đề này không?",
+                onDismiss = { showDeleteTopicDialog = false },
+                onConfirm = {
+                    viewModel.deleteTopicById(topicId)
+                    showDeleteTopicDialog = false
+                    navController.popBackStack()
+                }
+            )
+        }
 
-    // Dialog sửa tên chủ đề
-    if (showEditNameDialog) {
-        EditTopicNameDialog(
-            currentName = TOPIC?.name ?: "",
-            onDismiss = { showEditNameDialog = false },
-            onConfirm = { newName ->
-                viewModel.updateTopicName(topicId, newName)
-                showEditNameDialog = false
-            }
-        )
-    }
+        // Dialog sửa tên chủ đề
+        if (showEditNameDialog) {
+            EditTopicNameDialog(
+                currentName = TOPIC?.name ?: "",
+                onDismiss = { showEditNameDialog = false },
+                onConfirm = { newName ->
+                    viewModel.updateTopicName(topicId, newName)
+                    showEditNameDialog = false
+                }
+            )
+        }
 
-    // Dialog thêm từ vựng
-    if (showAddWordDialog) {
-        AddEditWordDialog(
-            title = "Thêm từ vựng",
-            word = null,
-            onDismiss = { showAddWordDialog = false },
-            onConfirm = { newWord ->
-                viewModel.addWordToTopic(topicId, newWord)
-                showAddWordDialog = false
-            }
-        )
-    }
+        // Dialog thêm từ vựng
+        if (showAddWordDialog) {
+            AddEditWordDialog(
+                title = "Thêm từ vựng",
+                word = null,
+                onDismiss = { showAddWordDialog = false },
+                onConfirm = { newWord ->
+                    viewModel.addWordToTopic(topicId, newWord)
+                    showAddWordDialog = false
+                }
+            )
+        }
 
-    // Dialog sửa từ vựng
-    if (showEditWordDialog && selectedWord != null) {
-        AddEditWordDialog(
-            title = "Chỉnh sửa từ vựng",
-            word = selectedWord,
-            onDismiss = {
-                showEditWordDialog = false
-                selectedWord = null
-            },
-            onConfirm = { newWord ->
-                viewModel.updateWordInTopic(topicId, selectedWord!!, newWord)
-                showEditWordDialog = false
-                selectedWord = null
-            },
-            onDelete = {
-                viewModel.deleteWordFromTopic(topicId, selectedWord!!)
-                showEditWordDialog = false
-                selectedWord = null
-            }
-        )
+        // Dialog sửa từ vựng
+        if (showEditWordDialog && selectedWord != null) {
+            AddEditWordDialog(
+                title = "Chỉnh sửa từ vựng",
+                word = selectedWord,
+                onDismiss = {
+                    showEditWordDialog = false
+                    selectedWord = null
+                },
+                onConfirm = { newWord ->
+                    viewModel.updateWordInTopic(topicId, selectedWord!!, newWord)
+                    showEditWordDialog = false
+                    selectedWord = null
+                },
+                onDelete = {
+                    viewModel.deleteWordFromTopic(topicId, selectedWord!!)
+                    showEditWordDialog = false
+                    selectedWord = null
+                }
+            )
+        }
     }
-}}
+}
 
 @Composable
 fun WordItem(

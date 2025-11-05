@@ -64,7 +64,6 @@ fun BackBar(navController: NavController, text: String) {
                 .clickable { navController.popBackStack() }
         )
         NameBar(text)
-
     }
 }
 

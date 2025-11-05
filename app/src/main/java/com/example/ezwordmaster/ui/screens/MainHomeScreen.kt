@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,36 +33,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
-import com.example.ezwordmaster.ui.screens.practice.PracticeScreen
-import com.example.ezwordmaster.ui.screens.practice.PracticeViewModel
+import com.example.ezwordmaster.model.MainTab
+import com.example.ezwordmaster.ui.screens.regime.PracticeScreen
+import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
-
-
-enum class MainTab {
-    MANAGEMENT, PRACTICE, SETTINGS
-}
-
 
 @Composable
 fun MainHomeScreen(
     navController: NavHostController,
     topicViewModel: TopicViewModel,
     practiceViewModel: PracticeViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    initialTab: MainTab = MainTab.MANAGEMENT
+
 ) {
-    var selectedTab by remember { mutableStateOf(MainTab.PRACTICE) }
+    var selectedTab by remember { mutableStateOf(initialTab) }
 
     val title = when (selectedTab) {
         MainTab.MANAGEMENT -> "Quản lý"
@@ -177,7 +173,7 @@ fun TopBarWithIcons(navController: NavHostController, title: String) {
             modifier = Modifier
                 .align(Alignment.CenterEnd) // Đặt icon ở cuối Box
                 .size(28.dp)
-                .clickable { navController.navigate("notificationscreen") } // Đổi tên route cho đúng
+                .clickable { navController.navigate("notificationscreen") }
         )
     }
 }
@@ -192,7 +188,7 @@ fun ModernBottomNavBar(
             .fillMaxWidth()
             .height(80.dp),
         color = Color.Transparent,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
     ) {
         Row(
             modifier = Modifier
@@ -260,25 +256,26 @@ fun BottomNavItem(
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 8.dp)
-            .then(
-                if (isSelected) {
-                    Modifier.shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        clip = false
-                    )
-                } else {
-                    Modifier
-                }
-            ),
+//            .then(
+//                if (isSelected) {
+//                    Modifier.shadow(
+//                        elevation = 4.dp,
+//                        shape = RoundedCornerShape(16.dp),
+//                        clip = false
+//                    )
+//                } else {
+//                    Modifier
+//                })
+        ,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
+        Image(
             painter = painterResource(id = icon),
             contentDescription = label,
-            tint = contentColor,
-            modifier = Modifier.size(26.dp)
+            modifier = Modifier.size(26.dp),
+            colorFilter = if (isSelected) null else ColorFilter.tint(Color.Gray)
+            // Có thể điều chỉnh colorFilter tùy theo nhu cầu
         )
 
         Spacer(modifier = Modifier.height(4.dp))

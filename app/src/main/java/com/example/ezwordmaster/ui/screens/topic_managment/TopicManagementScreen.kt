@@ -64,7 +64,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TopicManagementScreen(navController: NavHostController, viewModel: TopicViewModel) {
-    val TOPICS by viewModel.TOPICS.collectAsState()
+    val TOPICS by viewModel.topics.collectAsState()
     val TOASTMESSAGE by viewModel.toastMessage.collectAsState()
     val COROUTINESCOPE = rememberCoroutineScope()
     val SNACKBARHOSTSTATE = remember { SnackbarHostState() }

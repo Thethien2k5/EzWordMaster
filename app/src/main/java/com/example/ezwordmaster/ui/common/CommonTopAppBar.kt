@@ -26,7 +26,6 @@ fun CommonTopAppBar(
     onNavigateUp: () -> Unit,
     onLogoClick: () -> Unit
 ) {
-    // ✅ DÙNG CenterAlignedTopAppBar ĐỂ TIÊU ĐỀ TỰ ĐỘNG VÀO GIỮA
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -37,7 +36,7 @@ fun CommonTopAppBar(
             )
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.Transparent // Quan trọng: Để nền trong suốt
+            containerColor = Color.Transparent
         ),
         navigationIcon = {
             if (canNavigateBack) {
@@ -45,7 +44,7 @@ fun CommonTopAppBar(
                     Image(
                         painter = painterResource(id = R.drawable.return_),
                         contentDescription = "Back",
-                        modifier = Modifier.size(32.dp) // Tăng kích thước icon cho dễ nhấn
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
