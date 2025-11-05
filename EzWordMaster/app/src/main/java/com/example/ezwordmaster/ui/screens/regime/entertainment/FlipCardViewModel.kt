@@ -148,23 +148,25 @@ class FlipCardViewModel(
     }
 
     private fun completeGame() {
-        val state = _UISTATE.value
-        if (state.isCompleted) return // Tránh gọi nhiều lần
+        viewModelScope.launch {
+            val state = _UISTATE.value
+            if (state.isCompleted) return@launch // Tránh gọi nhiều lần
 
-        val topic = state.topic ?: return
-        val duration = System.currentTimeMillis() - state.startTime
-        val playTime = duration / 1000
+            val topic = state.topic ?: return@launch
+            val duration = System.currentTimeMillis() - state.startTime
+            val playTime = duration / 1000
 
-        val study_result = StudyResult.createFlipCardResult(
-            id = UUID.randomUUID().toString(),
-            topicId = topic.id ?: "unknown_id",
-            topicName = topic.name ?: "Chủ đề không tên",
-            duration = duration,
-            totalPairs = state.cards.size / 2,
-            matchedPairs = state.matchedPairs,
-            playTime = playTime
-        )
-        studyResultRepository.addStudyResult(study_result)
-        _UISTATE.value = _UISTATE.value.copy(isCompleted = true)
+            val study_result = StudyResult.createFlipCardResult(
+                id = UUID.randomUUID().toString(),
+                topicId = topic.id ?: "unknown_id",
+                topicName = topic.name ?: "Chủ đề không tên",
+                duration = duration,
+                totalPairs = state.cards.size / 2,
+                matchedPairs = state.matchedPairs,
+                playTime = playTime
+            )
+            studyResultRepository.addStudyResult(study_result)
+            _UISTATE.value = _UISTATE.value.copy(isCompleted = true)
+        }
     }
 }

@@ -139,21 +139,23 @@ class FlashcardViewModel(
 
     // Hàm hoàn thành bài kiểm tra
     private fun completeQuiz() {
-        val STATE = _UISTATE.value
-        if (STATE.isCompleted) return // Tránh gọi nhiều lần
+        viewModelScope.launch {
+            val STATE = _UISTATE.value
+            if (STATE.isCompleted) return@launch // Tránh gọi nhiều lần
 
-        val TOPIC = STATE.topic ?: return
-        val DURATION_MS = System.currentTimeMillis() - STATE.startTime
-        val STUDYRESULT = StudyResult.createFlashcardResult(
-            id = UUID.randomUUID().toString(),
-            topicId = TOPIC.id ?: "Lỗi không id FlashcardViewModel.kt",
-            topicName = TOPIC.name ?: "Chủ đề không tên",
-            duration = DURATION_MS,
-            totalWords = STATE.words.size,
-            knownWords = STATE.knownWords,
-            learningWords = STATE.learningWords
-        )
-        studyResultRepository.addStudyResult(STUDYRESULT)
-        _UISTATE.value = _UISTATE.value.copy(isCompleted = true)
+            val TOPIC = STATE.topic ?: return@launch
+            val DURATION_MS = System.currentTimeMillis() - STATE.startTime
+            val STUDYRESULT = StudyResult.createFlashcardResult(
+                id = UUID.randomUUID().toString(),
+                topicId = TOPIC.id ?: "Lỗi không id FlashcardViewModel.kt",
+                topicName = TOPIC.name ?: "Chủ đề không tên",
+                duration = DURATION_MS,
+                totalWords = STATE.words.size,
+                knownWords = STATE.knownWords,
+                learningWords = STATE.learningWords
+            )
+            studyResultRepository.addStudyResult(STUDYRESULT)
+            _UISTATE.value = _UISTATE.value.copy(isCompleted = true)
+        }
     }
 }

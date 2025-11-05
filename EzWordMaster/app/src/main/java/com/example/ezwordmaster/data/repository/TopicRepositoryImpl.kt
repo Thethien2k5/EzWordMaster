@@ -2,90 +2,132 @@ package com.example.ezwordmaster.data.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.ezwordmaster.data.local.dao.TopicDao
+import com.example.ezwordmaster.data.local.dao.WordDao
+import com.example.ezwordmaster.data.local.database.EzWordMasterDatabase
+import com.example.ezwordmaster.data.local.entity.TopicEntity
+import com.example.ezwordmaster.data.local.mapper.TopicMapper
 import com.example.ezwordmaster.domain.repository.ITopicRepository
 import com.example.ezwordmaster.model.Topic
 import com.example.ezwordmaster.model.Word
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.File
 
 class TopicRepositoryImpl(private val context: Context) : ITopicRepository {
 
-    private val FILE_NAME = "topics.json"
-    private val json = Json { prettyPrint = true }
+    private val database = EzWordMasterDatabase.getDatabase(context)
+    private val topicDao: TopicDao = database.topicDao()
+    private val wordDao: WordDao = database.wordDao()
 
-    // Đường dẫn tới file topics.json trong thư mục riêng của app
-    private fun getTopicsFile(): File = File(context.filesDir, FILE_NAME)
+    private val FILE_NAME = "topics.json" // Để check file cũ nếu có
 
-    // Kiểm tra file có tồn tại không
+    // Kiểm tra file JSON cũ có tồn tại không (để migration)
     override suspend fun isTopicsFileExists(): Boolean {
-        val exists = getTopicsFile().exists()
-        Log.d("TopicRepo", "File tồn tại: $exists")
-        return exists
+        val file = File(context.filesDir, FILE_NAME)
+        return file.exists()
     }
 
-    // Đọc dữ liệu từ file
-    // THÊM "override" vào tất cả các hàm public được định nghĩa trong interface
+    // Đọc dữ liệu từ Room Database
     override suspend fun loadTopics(): List<Topic> {
         createTopicsFileIfMissing()
-        val file = getTopicsFile()
 
-        return try {
-            val jsonString = file.readText()
-            json.decodeFromString(jsonString)
-        } catch (e: Exception) {
-            Log.e("TopicRepo", "Lỗi đọc file: ${e.message}")
-            emptyList()
+        val topicEntities = topicDao.getAllTopicsSync()
+        val topics = mutableListOf<Topic>()
+
+        for (topicEntity in topicEntities) {
+            val words = wordDao.getWordsByTopicIdSync(topicEntity.id)
+            val topic = TopicMapper.toDomain(topicEntity, words)
+            topics.add(topic)
         }
+
+        return topics
     }
 
-    // Ghi đè toàn bộ danh sách (chỉ dùng nội bộ)
-    private suspend fun saveTopics(topics: List<Topic>) {
-        try {
-            val jsonString = json.encodeToString(topics)
-            getTopicsFile().writeText(jsonString)
-            Log.d("TopicRepo", "Đã lưu ${topics.size} topics vào file.")
-        } catch (e: Exception) {
-            Log.e("TopicRepo", " Lỗi khi ghi file: ${e.message}")
-        }
-    }
-
-    //***** ====== TẠO ============ ********
-    //  Tạo file mặc định nếu chưa có
+    // Tạo dữ liệu mặc định nếu chưa có
     override suspend fun createTopicsFileIfMissing() {
-        val file = getTopicsFile()
-        if (!file.exists()) {
-            val defaultTopics = listOf(
-                Topic(
-                    id = "14",
-                    name = "Chào mừng đến với EzWordMaster",
-                    words = listOf(
-                        Word("Welcome", "Chào mừng"),
-                        Word("Friend", "Bạn bè"),
-                        Word("Happy", "Hạnh phúc"),
-                        Word("Smile", "Nụ cười"),
-                        Word("Hello", "Xin chào"),
-                        Word("Greeting", "Lời chào"),
-                        Word("Warm", "Ấm áp"),
-                        Word("Joy", "Niềm vui"),
-                        Word("Peace", "Bình yên"),
-                        Word("Love", "Yêu thương"),
-                        Word("Kind", "Tử tế"),
-                        Word("Share", "Chia sẻ"),
-                        Word("Together", "Cùng nhau"),
-                        Word("Success", "Thành công")
-                    )
-                )
-            )
-            saveTopics(defaultTopics)
-            Log.d("TopicRepo", "Đã tạo file topics.json mặc định")
+        val topicCount = topicDao.getTopicCount()
+
+        if (topicCount == 0) {
+            // Kiểm tra xem có file JSON cũ không, nếu có thì migrate
+            val jsonFile = File(context.filesDir, FILE_NAME)
+            if (jsonFile.exists()) {
+                migrateFromJson(jsonFile)
+            } else {
+                // Tạo dữ liệu mặc định
+                createDefaultTopics()
+            }
         }
     }
 
-    // Tạo ID mới cho topic, tạo id nhỏ ch tồn tại ( lấy đầy khoảng trống id )
+    // Migrate từ JSON cũ sang Room
+    private suspend fun migrateFromJson(jsonFile: File) {
+        try {
+            Log.d("TopicRepo", "Bắt đầu migration từ JSON sang Room")
+            val jsonString = jsonFile.readText()
+            val json = kotlinx.serialization.json.Json { prettyPrint = true }
+            val topics: List<Topic> = json.decodeFromString(jsonString)
+
+            for (topic in topics) {
+                val topicEntity = TopicMapper.toEntity(topic)
+                topicDao.insertTopic(topicEntity)
+
+                if (topic.words.isNotEmpty()) {
+                    val wordEntities = topic.words.map { word ->
+                        TopicMapper.wordToEntity(word, topic.id ?: "")
+                    }
+                    wordDao.insertWords(wordEntities)
+                }
+            }
+
+            Log.d("TopicRepo", "Đã migrate ${topics.size} topics từ JSON sang Room")
+
+            // Optionally: Backup file cũ hoặc xóa
+            // jsonFile.delete()
+        } catch (e: Exception) {
+            Log.e("TopicRepo", "Lỗi migration từ JSON: ${e.message}")
+            // Nếu lỗi, tạo dữ liệu mặc định
+            createDefaultTopics()
+        }
+    }
+
+    // Tạo dữ liệu mặc định
+    private suspend fun createDefaultTopics() {
+        val defaultTopic = Topic(
+            id = "14",
+            name = "Chào mừng đến với EzWordMaster",
+            words = listOf(
+                Word("Welcome", "Chào mừng"),
+                Word("Friend", "Bạn bè"),
+                Word("Happy", "Hạnh phúc"),
+                Word("Smile", "Nụ cười"),
+                Word("Hello", "Xin chào"),
+                Word("Greeting", "Lời chào"),
+                Word("Warm", "Ấm áp"),
+                Word("Joy", "Niềm vui"),
+                Word("Peace", "Bình yên"),
+                Word("Love", "Yêu thương"),
+                Word("Kind", "Tử tế"),
+                Word("Share", "Chia sẻ"),
+                Word("Together", "Cùng nhau"),
+                Word("Success", "Thành công")
+            )
+        )
+
+        val topicEntity = TopicMapper.toEntity(defaultTopic)
+        topicDao.insertTopic(topicEntity)
+
+        val wordEntities = defaultTopic.words.map { word ->
+            TopicMapper.wordToEntity(word, defaultTopic.id ?: "")
+        }
+        wordDao.insertWords(wordEntities)
+
+        Log.d("TopicRepo", "Đã tạo dữ liệu mặc định trong Room")
+    }
+
+    // Tạo ID mới cho topic
     override suspend fun generateNewTopicId(): String {
-        val topics = loadTopics()
-        val existingIds = topics.mapNotNull { it.id?.toIntOrNull() }.sorted()
+        topicDao.getMaxTopicId() ?: 0
+        val allTopics = loadTopics()
+        val existingIds = allTopics.mapNotNull { it.id?.toIntOrNull() }.sorted()
 
         var newId = 1
         for (id in existingIds) {
@@ -98,34 +140,57 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository {
         return newId.toString()
     }
 
-    //******* ========== THÊM =================== **************
-    //  Thêm hoặc cập nhật một topic (thông minh)
+    // Thêm hoặc cập nhật một topic
     override suspend fun addOrUpdateTopic(newTopic: Topic) {
-        val currentTopics = loadTopics().toMutableList()
-        val existing = currentTopics.find {
-            it.id == newTopic.id || it.name.equals(newTopic.name, ignoreCase = true)
+        val existingTopic = if (newTopic.id != null) {
+            topicDao.getTopicById(newTopic.id)
+        } else {
+            topicDao.getTopicByName(newTopic.name ?: "")
         }
 
-        if (existing == null) {
-            //  Nếu chưa tồn tại → thêm mới
-            currentTopics.add(newTopic)
+        if (existingTopic == null) {
+            // Thêm mới
+            val topicEntity = TopicMapper.toEntity(newTopic)
+            topicDao.insertTopic(topicEntity)
+
+            // Xóa words cũ nếu có, rồi thêm words mới
+            wordDao.deleteWordsByTopicId(topicEntity.id)
+            if (newTopic.words.isNotEmpty()) {
+                val wordEntities = newTopic.words.map { word ->
+                    TopicMapper.wordToEntity(word, topicEntity.id)
+                }
+                wordDao.insertWords(wordEntities)
+            }
+
             Log.d("TopicRepo", "Đã thêm chủ đề mới: ${newTopic.name}")
         } else {
-            // Kiểm tra danh sách từ có giống hệt không
-            val sameWords = existing.words.size == newTopic.words.size &&
-                    existing.words.containsAll(newTopic.words)
+            // Kiểm tra có giống hệt không
+            val existingWords = wordDao.getWordsByTopicIdSync(existingTopic.id)
+            val existingDomain = TopicMapper.toDomain(existingTopic, existingWords)
+
+            val sameWords = existingDomain.words.size == newTopic.words.size &&
+                    existingDomain.words.containsAll(newTopic.words)
 
             if (sameWords) {
                 Log.d("TopicRepo", "Chủ đề '${newTopic.name}' đã tồn tại và giống hệt, bỏ qua.")
                 return
             } else {
-                // Cập nhật chủ đề (thay thế danh sách từ)
-                val index = currentTopics.indexOf(existing)
-                currentTopics[index] = newTopic
-                Log.d("TopicRepo", " Cập nhật chủ đề '${newTopic.name}' với danh sách từ mới.")
+                // Cập nhật
+                val topicEntity = TopicMapper.toEntity(newTopic.copy(id = existingTopic.id))
+                topicDao.updateTopic(topicEntity)
+
+                // Xóa words cũ và thêm words mới
+                wordDao.deleteWordsByTopicId(topicEntity.id)
+                if (newTopic.words.isNotEmpty()) {
+                    val wordEntities = newTopic.words.map { word ->
+                        TopicMapper.wordToEntity(word, topicEntity.id)
+                    }
+                    wordDao.insertWords(wordEntities)
+                }
+
+                Log.d("TopicRepo", "Đã cập nhật chủ đề '${newTopic.name}'")
             }
         }
-        saveTopics(currentTopics)
     }
 
     // Thêm từ vào chủ đề
@@ -135,115 +200,89 @@ class TopicRepositoryImpl(private val context: Context) : ITopicRepository {
                 "TopicRepo",
                 "Từ '${word.word}' đã tồn tại trong chủ đề. Thao tác thêm mới bị hủy."
             )
-            // Quan trọng: Dừng hàm nếu từ đã tồn tại
             return
         }
-        val topics = loadTopics().toMutableList()
-        val index = topics.indexOfFirst { it.id == topicId }
 
-        if (index != -1) {
-            val updatedWords = topics[index].words.toMutableList()
-            updatedWords.add(word)
-            topics[index] = topics[index].copy(words = updatedWords)
-            saveTopics(topics)
+        val topicEntity = topicDao.getTopicById(topicId)
+        if (topicEntity != null) {
+            val wordEntity = TopicMapper.wordToEntity(word, topicId)
+            wordDao.insertWord(wordEntity)
             Log.d("TopicRepo", "➕ Đã thêm từ '${word.word}' vào chủ đề")
         }
     }
 
-    //Thêm tên chủ đề mới
+    // Thêm tên chủ đề mới
     override suspend fun addNameTopic(newName: String) {
         if (topicNameExists(newName)) {
             Log.d("TopicRepo", "Tên chủ đề '$newName' đã tồn tại. Thao tác thêm mới bị hủy.")
             return
         }
 
-        val topics = loadTopics().toMutableList()
         val newId = generateNewTopicId()
-
-        val newTopic = Topic(
-            id = newId,
-            name = newName,
-            words = emptyList()
-        )
-
-        topics.add(newTopic)
-        saveTopics(topics)
+        val topicEntity = TopicEntity(id = newId, name = newName)
+        topicDao.insertTopic(topicEntity)
 
         Log.d("TopicRepo", "🆕 Đã thêm chủ đề mới: id=$newId, name=$newName")
     }
 
-    //*** ================= XÓA ===============================
-    //  Xóa một topic theo id
+    // Xóa một topic theo id
     override suspend fun deleteTopicById(id: String) {
-        val currentTopics = loadTopics().filterNot { it.id == id }
-        saveTopics(currentTopics)
+        // Room sẽ tự động xóa words nhờ CASCADE
+        topicDao.deleteTopicById(id)
         Log.d("TopicRepo", "🗑 Đã xóa chủ đề có id=$id")
     }
 
     // Xóa từ khỏi chủ đề
     override suspend fun deleteWordFromTopic(topicId: String, word: Word) {
-        val topics = loadTopics().toMutableList()
-        val index = topics.indexOfFirst { it.id == topicId }
-
-        if (index != -1) {
-            val updatedWords = topics[index].words.toMutableList()
-            updatedWords.removeAll { it.word == word.word && it.meaning == word.meaning }
-            topics[index] = topics[index].copy(words = updatedWords)
-            saveTopics(topics)
-            Log.d("TopicRepo", "🗑️ Đã xóa từ '${word.word}' khỏi chủ đề")
-        }
+        wordDao.deleteWordFromTopic(topicId, word.word, word.meaning)
+        Log.d("TopicRepo", "🗑️ Đã xóa từ '${word.word}' khỏi chủ đề")
     }
 
-
-    // *** =============== CẬP NHẬT  =========================
     // Cập nhật tên chủ đề
     override suspend fun updateTopicName(id: String, newName: String) {
-        val topics = loadTopics().toMutableList()
-        val index = topics.indexOfFirst { it.id == id }
-
-        if (index != -1) {
-            topics[index] = topics[index].copy(name = newName)
-            saveTopics(topics)
-            Log.d("TopicRepo", "✏️ Đã cập nhật tên chủ đề: $newName")
-        }
+        topicDao.updateTopicName(id, newName)
+        Log.d("TopicRepo", "✏️ Đã cập nhật tên chủ đề: $newName")
     }
 
     // Cập nhật từ trong chủ đề
     override suspend fun updateWordInTopic(topicId: String, oldWord: Word, newWord: Word) {
-        val topics = loadTopics().toMutableList()
-        val index = topics.indexOfFirst { it.id == topicId }
+        val existingWordEntity = wordDao.getWordByTopicAndContent(
+            topicId,
+            oldWord.word,
+            oldWord.meaning
+        )
 
-        if (index != -1) {
-            val updatedWords = topics[index].words.toMutableList()
-            val wordIndex = updatedWords.indexOfFirst {
-                it.word == oldWord.word && it.meaning == oldWord.meaning
-            }
-
-            if (wordIndex != -1) {
-                updatedWords[wordIndex] = newWord
-                topics[index] = topics[index].copy(words = updatedWords)
-                saveTopics(topics)
-                Log.d("TopicRepo", "✏️ Đã cập nhật từ '${newWord.word}'")
-            }
+        if (existingWordEntity != null) {
+            val updatedWordEntity = existingWordEntity.copy(
+                word = newWord.word,
+                meaning = newWord.meaning,
+                example = newWord.example
+            )
+            wordDao.updateWord(updatedWordEntity)
+            Log.d("TopicRepo", "✏️ Đã cập nhật từ '${newWord.word}'")
         }
     }
 
     // Lấy một topic theo ID
     override suspend fun getTopicById(id: String): Topic? {
-        return loadTopics().find { it.id == id }
+        val topicEntity = topicDao.getTopicById(id) ?: return null
+        val words = wordDao.getWordsByTopicIdSync(id)
+        return TopicMapper.toDomain(topicEntity, words)
     }
 
+    // Kiểm tra tên chủ đề đã tồn tại chưa
     override suspend fun topicNameExists(name: String): Boolean {
-        val allTopics = loadTopics()
-        return allTopics.any { it.name.equals(name, ignoreCase = true) }
+        val existing = topicDao.getTopicByName(name)
+        return existing != null
     }
 
+    // Kiểm tra từ đã tồn tại trong chủ đề chưa
     override suspend fun wordExistsInTopic(topicId: String, word: Word): Boolean {
-        val topic = getTopicById(topicId)
-        return topic?.words?.any {
-            // Kiểm tra cả từ và nghĩa để xác định sự trùng lặp
-            it.word.equals(word.word, ignoreCase = true) &&
-                    it.meaning.equals(word.meaning, ignoreCase = true)
-        } ?: false
+        val existing = wordDao.getWordByTopicAndContent(
+            topicId,
+            word.word,
+            word.meaning
+        )
+        return existing != null
     }
 }

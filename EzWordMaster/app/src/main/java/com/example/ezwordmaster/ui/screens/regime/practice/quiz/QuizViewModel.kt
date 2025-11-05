@@ -197,23 +197,25 @@ class QuizViewModel(
      * Hoàn thành bài kiểm tra và lưu kết quả (giống FlashcardViewModel)
      */
     private fun completeQuiz() {
-        val state = _uiState.value
-        if (state.isCompleted) return // Tránh gọi nhiều lần
+        viewModelScope.launch {
+            val state = _uiState.value
+            if (state.isCompleted) return@launch // Tránh gọi nhiều lần
 
-        val topic = state.topic ?: return
-        val durationMs = System.currentTimeMillis() - state.startTime
+            val topic = state.topic ?: return@launch
+            val durationMs = System.currentTimeMillis() - state.startTime
 
-        val studyResult = StudyResult.createQuizResult(
-            id = UUID.randomUUID().toString(),
-            topicId = topic.id ?: "Lỗi không id QuizViewModel.kt",
-            topicName = topic.name ?: "Chủ đề không tên",
-            duration = durationMs,
-            totalWords = state.questions.size,
-            knownWords = state.knownWords,
-            learningWords = state.learningWords
-        )
+            val studyResult = StudyResult.createQuizResult(
+                id = UUID.randomUUID().toString(),
+                topicId = topic.id ?: "Lỗi không id QuizViewModel.kt",
+                topicName = topic.name ?: "Chủ đề không tên",
+                duration = durationMs,
+                totalWords = state.questions.size,
+                knownWords = state.knownWords,
+                learningWords = state.learningWords
+            )
 
-        studyResultRepository.addStudyResult(studyResult)
-        _uiState.value = _uiState.value.copy(isCompleted = true)
+            studyResultRepository.addStudyResult(studyResult)
+            _uiState.value = _uiState.value.copy(isCompleted = true)
+        }
     }
 }
