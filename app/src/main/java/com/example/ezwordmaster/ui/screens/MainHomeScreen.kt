@@ -40,15 +40,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.MainTab
+import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.screens.regime.PracticeScreen
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
+import com.example.ezwordmaster.ui.screens.translation.TranslationScreen
 
 @Composable
 fun MainHomeScreen(
@@ -56,8 +59,8 @@ fun MainHomeScreen(
     topicViewModel: TopicViewModel,
     practiceViewModel: PracticeViewModel,
     settingsViewModel: SettingsViewModel,
+    factory: ViewModelFactory, // THÊM FACTORY PARAMETER
     initialTab: MainTab = MainTab.MANAGEMENT
-
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
 
@@ -65,6 +68,7 @@ fun MainHomeScreen(
         MainTab.MANAGEMENT -> "Quản lý"
         MainTab.PRACTICE -> "Ôn tập"
         MainTab.SETTINGS -> "Cài đặt"
+        MainTab.TRANSLATION -> "Dịch thuật"
     }
 
     Box(
@@ -136,6 +140,17 @@ fun MainHomeScreen(
                                 viewModel = settingsViewModel
                             )
                         }
+
+                        MainTab.TRANSLATION -> {
+                            // Sử dụng factory được truyền vào
+                            val viewModel = viewModel<com.example.ezwordmaster.ui.screens.translation.TranslationViewModel>(
+                                factory = factory
+                            )
+                            TranslationScreen(
+                                onBackClick = { /* Không cần vì đã có bottom nav */ },
+                                viewModel = viewModel
+                            )
+                        }
                     }
                 }
             }
@@ -143,7 +158,8 @@ fun MainHomeScreen(
             // Bottom Navigation Bar
             ModernBottomNavBar(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = { selectedTab = it },
+                navController = navController
             )
         }
     }
@@ -169,11 +185,11 @@ fun TopBarWithIcons(navController: NavHostController, title: String) {
         // Icon thông báo được đặt ở cuối
         Image(
             painter = painterResource(id = R.drawable.ic_bell),
-            contentDescription = "Notifications",
+            contentDescription = "Thông báo",
             modifier = Modifier
-                .align(Alignment.CenterEnd) // Đặt icon ở cuối Box
+                .align(Alignment.CenterEnd)
                 .size(28.dp)
-                .clickable { navController.navigate("notificationscreen") }
+                .clickable { navController.navigate("notifications") }
         )
     }
 }
@@ -181,7 +197,8 @@ fun TopBarWithIcons(navController: NavHostController, title: String) {
 @Composable
 fun ModernBottomNavBar(
     selectedTab: MainTab,
-    onTabSelected: (MainTab) -> Unit
+    onTabSelected: (MainTab) -> Unit,
+    navController: NavHostController
 ) {
     Surface(
         modifier = Modifier
@@ -215,6 +232,15 @@ fun ModernBottomNavBar(
                 selectedColor = Color(0xFF4CAF50)
             )
 
+            // Tab Dịch thuật
+            BottomNavItem(
+                icon = R.drawable.ic_search,
+                label = "Dịch thuật",
+                isSelected = selectedTab == MainTab.TRANSLATION,
+                onClick = { onTabSelected(MainTab.TRANSLATION) },
+                selectedColor = Color(0xFF9C27B0)
+            )
+
             // Tab Cài đặt
             BottomNavItem(
                 icon = R.drawable.ic_settings,
@@ -244,8 +270,8 @@ fun BottomNavItem(
     val contentColor = if (isSelected) selectedColor else Color.Gray
 
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.4f else 1.0f, // Phóng to 170% khi được chọn
-        animationSpec = tween(durationMillis = 200), // Tốc độ animation
+        targetValue = if (isSelected) 1.4f else 1.0f,
+        animationSpec = tween(durationMillis = 200),
         label = "scale_animation"
     )
 
@@ -255,34 +281,22 @@ fun BottomNavItem(
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 8.dp)
-//            .then(
-//                if (isSelected) {
-//                    Modifier.shadow(
-//                        elevation = 4.dp,
-//                        shape = RoundedCornerShape(16.dp),
-//                        clip = false
-//                    )
-//                } else {
-//                    Modifier
-//                })
-        ,
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Image(
             painter = painterResource(id = icon),
             contentDescription = label,
-            modifier = Modifier.size(26.dp),
+            modifier = Modifier.size(24.dp),
             colorFilter = if (isSelected) null else ColorFilter.tint(Color.Gray)
-            // Có thể điều chỉnh colorFilter tùy theo nhu cầu
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = contentColor
         )

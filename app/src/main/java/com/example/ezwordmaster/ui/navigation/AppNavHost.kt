@@ -30,6 +30,7 @@ import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
+import com.example.ezwordmaster.ui.screens.translation.TranslationScreen
 
 @Composable
 fun AppNavHost(
@@ -41,8 +42,9 @@ fun AppNavHost(
         startDestination = "home/MANAGEMENT"
     ) {
         //*** ======= HOME và VÀI THỨ KHÁC ======= ***///
-        composable("intro") { IntroScreen(navController = navController) }
-//        composable("home") { HomeScreen(navController = navController) }
+        composable("intro") {
+            IntroScreen(navController = navController)
+        }
 
         composable("home/{selectedTab}") { backStackEntry ->
             val selectedTabString = backStackEntry.arguments?.getString("selectedTab")
@@ -53,34 +55,52 @@ fun AppNavHost(
             }
             MainHomeScreen(
                 navController = navController,
-                // Chỉ định rõ loại ViewModel cho từng tham số
                 topicViewModel = viewModel<TopicViewModel>(factory = factory),
                 practiceViewModel = viewModel<PracticeViewModel>(factory = factory),
                 settingsViewModel = viewModel<SettingsViewModel>(factory = factory),
+                factory = factory,
                 initialTab = initialTab
             )
         }
-        composable("about") { AboutScreen(navController = navController) }
-        composable("help") { HelpScreen(navController = navController) }
-//        composable("translate") { TranslateScreen(navController = navController) }
+        composable("about") {
+            AboutScreen(navController = navController)
+        }
+        composable("help") {
+            HelpScreen(navController = navController)
+        }
         composable("settings") {
             SettingsScreen(
                 navController = navController,
                 viewModel = viewModel(factory = factory)
             )
         }
-        composable("notificationscreen") { NotificationScreen(navController = navController) }
 
+        //*** ======= THÊM MÀN HÌNH MỚI ======= ***///
+        // SỬA TỪ "notificationscreen" THÀNH "notifications"
+        composable("notifications") {
+            val viewModel = viewModel<com.example.ezwordmaster.ui.screens.notification.NotificationViewModel>(factory = factory)
+            NotificationScreen(
+                onBackClick = { navController.popBackStack() },
+                viewModel = viewModel
+            )
+        }
+
+        composable("translation") {
+            val viewModel = viewModel<com.example.ezwordmaster.ui.screens.translation.TranslationViewModel>(factory = factory)
+            TranslationScreen(
+                onBackClick = { navController.popBackStack() },
+                viewModel = viewModel
+            )
+        }
 
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
-        //danh sách chủ đề
         composable("topicmanagementscreen") {
             TopicManagementScreen(
                 navController = navController,
                 viewModel = viewModel(factory = factory)
             )
         }
-        // chỉnh sửa chủ đề cụ để
+
         composable("edittopic/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
             EditTopicScreen(
@@ -91,21 +111,20 @@ fun AppNavHost(
         }
 
         // ======= ÔN TẬP =======///
-        // chọn chủ đề muốn ôn tập
         composable("practice") {
             PracticeScreen(
                 navController = navController,
                 viewModel = viewModel(factory = factory)
             )
         }
-        // lịch sử
+
         composable("studyhistory") {
             StudyHistoryScreen(
                 navController = navController,
                 viewModel = viewModel(factory = factory)
             )
         }
-        // chọn chế độ ôn tập / lịch sử ôn tập
+
         composable("wordpractice/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             WordPracticeScreen(
@@ -120,8 +139,7 @@ fun AppNavHost(
             val topicId = backStackEntry.arguments?.getString("topicId")
             val topicName = backStackEntry.arguments?.getString("topicName")
             val knownWords = backStackEntry.arguments?.getString("knownWords")?.toIntOrNull() ?: 0
-            val learningWords =
-                backStackEntry.arguments?.getString("learningWords")?.toIntOrNull() ?: 0
+            val learningWords = backStackEntry.arguments?.getString("learningWords")?.toIntOrNull() ?: 0
             val totalWords = backStackEntry.arguments?.getString("totalWords")?.toIntOrNull() ?: 0
             ResultScreen(
                 navController = navController,
@@ -133,8 +151,8 @@ fun AppNavHost(
                 viewModel = viewModel(factory = factory)
             )
         }
+
         //======== FLASH CARD =================
-        // chế độ ôn tập flash card
         composable("flashcard/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             FlashcardScreen(
@@ -143,8 +161,8 @@ fun AppNavHost(
                 viewModel = viewModel(factory = factory)
             )
         }
+
         //================= LẬT THẺ ===========================
-        // chế độ ôn tập lật thẻ
         composable("wordselection/{topicId}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             WordSelectionScreen(
@@ -153,7 +171,7 @@ fun AppNavHost(
                 viewModel = viewModel(factory = factory)
             )
         }
-        // bắt đầu lật thẻ
+
         composable("flipcard/{topicId}/{wordsJson}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             val wordsJson = backStackEntry.arguments?.getString("wordsJson")
@@ -164,23 +182,21 @@ fun AppNavHost(
                 viewModel = viewModel(factory = factory)
             )
         }
-        //kết quả thể thẻ
+
         composable("flipresult/{topicId}/{topicName}/{matchedPairs}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             val topicName = backStackEntry.arguments?.getString("topicName")
-            val matchedPairs =
-                backStackEntry.arguments?.getString("matchedPairs")?.toIntOrNull() ?: 0
+            val matchedPairs = backStackEntry.arguments?.getString("matchedPairs")?.toIntOrNull() ?: 0
 
             FlipResultScreen(
                 navController = navController,
                 topicId = topicId,
-                topicName = topicName, // Truyền topicName vào
-                matchedPairs = matchedPairs // Sửa tên biến cho nhất quán
+                topicName = topicName,
+                matchedPairs = matchedPairs
             )
         }
 
         //*** ======= ÔN TẬP MỞ RỘNG QUIZ ======= ***///
-        // Màn hình Đúng/Sai
         composable("practice_quiz_truefalse/{topicId}/{showAnswer}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             val showAnswer = backStackEntry.arguments?.getString("showAnswer")?.toBoolean() ?: true
@@ -191,11 +207,10 @@ fun AppNavHost(
                 viewModel = viewModel(factory = factory)
             )
         }
-        // Màn hình Tự luận
+
         composable("practice_quiz_essay/{topicId}/{showAnswer}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             val showAnswer = backStackEntry.arguments?.getString("showAnswer")?.toBoolean() ?: true
-
             EssayQuizScreen(
                 navController,
                 topicId,
@@ -203,7 +218,7 @@ fun AppNavHost(
                 viewModel = viewModel(factory = factory)
             )
         }
-        // Màn hình Nhiều lựa chọn
+
         composable("practice_quiz_multi/{topicId}/{showAnswer}") { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId")
             val showAnswer = backStackEntry.arguments?.getString("showAnswer")?.toBoolean() ?: true

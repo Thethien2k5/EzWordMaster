@@ -19,7 +19,7 @@ import com.example.ezwordmaster.ui.theme.EzWordMasterTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val REQUESTPERMISSIONLAUNCHER = registerForActivityResult(
+    private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         // Xử lý trường hợp người dùng từ chối cấp quyền
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                REQUESTPERMISSIONLAUNCHER.launch(Manifest.permission.POST_NOTIFICATIONS)
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
@@ -43,8 +43,8 @@ class MainActivity : ComponentActivity() {
 
         askNotificationPermission()
 
-        val APPCONTAINER = AppContainer(applicationContext)
-        val VIEWMODELFACTORY = ViewModelFactory(APPCONTAINER)
+        val appContainer = AppContainer(applicationContext)
+        val viewModelFactory = ViewModelFactory(appContainer)
 
         setContent {
             EzWordMasterTheme {
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavHost(factory = VIEWMODELFACTORY)
+                    AppNavHost(factory = viewModelFactory)
                 }
             }
         }

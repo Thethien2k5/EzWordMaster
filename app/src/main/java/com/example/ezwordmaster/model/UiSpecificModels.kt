@@ -11,7 +11,7 @@ enum class SwipeDirection {
 }
 
 enum class MainTab {
-    MANAGEMENT, PRACTICE, SETTINGS
+    MANAGEMENT, PRACTICE, SETTINGS,TRANSLATION
 }
 
 data class HelpItem(

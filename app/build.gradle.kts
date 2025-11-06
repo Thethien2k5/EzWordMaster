@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -57,6 +58,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.incremental", "true")
@@ -95,6 +97,26 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
+    // Text-to-Speech
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.4")
+
+    // Coil để load GIF
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-gif:2.5.0")
+
+    // Konfetti để hiệu ứng pháo bông
+    implementation("nl.dionsegijn:konfetti-compose:2.0.4")
+
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
     // Debug & Test
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -102,14 +124,15 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    // Coil để load GIF (cho hoạt ảnh động)
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("io.coil-kt:coil-gif:2.5.0")
 
-    // Konfetti để hiệu ứng pháo bông (confetti)
-    implementation("nl.dionsegijn:konfetti-compose:2.0.4")
-    //Room Database - sử dụng KSP thay vì kapt để tránh lỗi SQLite trên Windows
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    // Gson for TypeConverters
+    implementation("com.google.code.gson:gson:2.10.1")
+    // Hilt for Dependency Injection
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.48.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+    // Dịch thuật Offline của Google
+    implementation("com.google.mlkit:translate:17.0.2")
 }

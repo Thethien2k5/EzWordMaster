@@ -4,8 +4,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CenterAlignedTopAppBar // <-- THAY ĐỔI QUAN TRỌNG
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -22,9 +25,10 @@ import com.example.ezwordmaster.R
 @Composable
 fun CommonTopAppBar(
     title: String,
-    canNavigateBack: Boolean,
-    onNavigateUp: () -> Unit,
-    onLogoClick: () -> Unit
+    canNavigateBack: Boolean = true,  // THÊM PARAMETER NÀY
+    onNavigateUp: () -> Unit = {},    // THÊM PARAMETER NÀY
+    onLogoClick: () -> Unit = {},
+    actions: @Composable () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -41,8 +45,8 @@ fun CommonTopAppBar(
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(onClick = onNavigateUp) {
-                    Image(
-                        painter = painterResource(id = R.drawable.return_),
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
                         modifier = Modifier.size(32.dp)
                     )
@@ -50,6 +54,7 @@ fun CommonTopAppBar(
             }
         },
         actions = {
+            actions()
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Go to Home",
