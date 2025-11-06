@@ -32,9 +32,9 @@ fun AboutScreen(navController: NavHostController) {
                 CommonTopAppBar(
                     title = "About Us",
                     canNavigateBack = true,
-                    onNavigateUp = { navController.popBackStack() },
+                    onNavigateUp = { navController.navigate("home/SETTINGS") },
                     onLogoClick = {
-                        navController.popBackStack()
+                        navController.navigate("home/SETTINGS")
                     }
                 )
             },

@@ -26,12 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+//import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+//import androidx.navigation.compose.rememberNavController
 import com.example.ezwordmaster.model.HelpItem
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
@@ -50,9 +50,9 @@ fun HelpScreen(
                 CommonTopAppBar(
                     title = "Help",
                     canNavigateBack = true,
-                    onNavigateUp = { navController.popBackStack() },
+                    onNavigateUp = { navController.navigate("home/SETTINGS") },
                     onLogoClick = {
-                        navController.popBackStack()
+                        navController.navigate("home/SETTINGS")
                     }
                 )
             },
@@ -133,9 +133,9 @@ fun QuestionItem(item: HelpItem, isSelected: Boolean, onClick: () -> Unit) {
 }
 
 // ✅ HÀM PREVIEW ĐÃ ĐƯỢC SỬA LẠI
-@Preview(showBackground = true)
-@Composable
-fun HelpScreenPreview() {
-    // Tạo một NavController giả để preview có thể chạy
-    HelpScreen(navController = rememberNavController())
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun HelpScreenPreview() {
+//    // Tạo một NavController giả để preview có thể chạy
+//    HelpScreen(navController = rememberNavController())
+//}

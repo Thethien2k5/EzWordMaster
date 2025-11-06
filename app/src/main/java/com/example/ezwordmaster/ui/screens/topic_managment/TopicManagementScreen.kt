@@ -341,7 +341,7 @@ fun ExpandableTopicItem(topic: Topic, navController: NavHostController) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 400.dp) // giới hạn chiều cao, phần còn lại cuộn
+                        .heightIn(max = 270.dp) // giới hạn chiều cao, phần còn lại cuộn
                 ) {
                     items(topic.words) { word ->
                         Text(
