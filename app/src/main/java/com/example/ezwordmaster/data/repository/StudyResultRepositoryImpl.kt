@@ -123,6 +123,16 @@ class StudyResultRepositoryImpl(private val context: Context) : IStudyResultRepo
                 "Đã xóa ${toDelete.size} bản ghi cũ nhất để giữ giới hạn $maxRecords"
             )
         }
+
+        // Convert StudyResult sang StudyResultEntity và insert vào database
+        val entity = StudyResultMapper.toEntity(newResult)
+        studyResultDao.insertResult(entity)
+        
+        Log.d(
+            "StudyResultRepo",
+            "Đã lưu kết quả học tập: id=${newResult.id}, mode=${newResult.studyMode}, topic=${newResult.topicName}"
+        )
+        Unit // Đảm bảo return type là Unit
     }
 
     /**
