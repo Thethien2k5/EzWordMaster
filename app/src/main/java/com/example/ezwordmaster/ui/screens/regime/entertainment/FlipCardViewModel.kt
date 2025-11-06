@@ -147,7 +147,7 @@ class FlipCardViewModel(
         }
     }
 
-    private fun completeGame() {
+    private suspend fun completeGame() {
         val state = _UISTATE.value
         if (state.isCompleted) return // Tránh gọi nhiều lần
 

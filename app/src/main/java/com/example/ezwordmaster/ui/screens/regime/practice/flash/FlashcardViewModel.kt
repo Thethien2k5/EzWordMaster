@@ -138,7 +138,7 @@ class FlashcardViewModel(
     }
 
     // Hàm hoàn thành bài kiểm tra
-    private fun completeQuiz() {
+    private suspend fun completeQuiz() {
         val STATE = _UISTATE.value
         if (STATE.isCompleted) return // Tránh gọi nhiều lần
 

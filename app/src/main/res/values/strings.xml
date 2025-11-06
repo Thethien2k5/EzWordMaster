@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">EzWordMaster</string>
+    <string name="landscape_warning_title">Vui lòng xoay dọc màn hình</string>
+    <string name="landscape_warning_message">Ứng dụng hiện chưa hỗ trợ chế độ ngang. Xin cảm ơn!</string>
 </resources>

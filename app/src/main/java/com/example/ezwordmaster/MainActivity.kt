@@ -2,21 +2,20 @@ package com.example.ezwordmaster
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.Modifier
-import androidx.compose.material3.Surface
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
+import com.example.ezwordmaster.ui.AppContainer
+import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.navigation.AppNavHost
 import com.example.ezwordmaster.ui.theme.EzWordMasterTheme
-import com.example.ezwordmaster.ui.ViewModelFactory
-import com.example.ezwordmaster.ui.AppContainer
-
 
 class MainActivity : ComponentActivity() {
 
@@ -29,7 +28,11 @@ class MainActivity : ComponentActivity() {
     // Hiển thị thông báo yêu cầu cấp quyền thông báo
     private fun askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 REQUESTPERMISSIONLAUNCHER.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }

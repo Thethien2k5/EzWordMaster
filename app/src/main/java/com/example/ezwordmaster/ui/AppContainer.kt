@@ -1,9 +1,9 @@
 package com.example.ezwordmaster.ui
 
 import android.content.Context
-import com.example.ezwordmaster.data.repository.SettingsRepositoryImpl
-import com.example.ezwordmaster.data.repository.StudyResultRepositoryImpl
-import com.example.ezwordmaster.data.repository.TopicRepositoryImpl
+import com.example.ezwordmaster.data.local.repository.SettingsRepositoryImpl
+import com.example.ezwordmaster.data.local.repository.StudyResultRepositoryImpl
+import com.example.ezwordmaster.data.local.repository.TopicRepositoryImpl
 import com.example.ezwordmaster.domain.repository.ISettingsRepository
 import com.example.ezwordmaster.domain.repository.IStudyResultRepository
 import com.example.ezwordmaster.domain.repository.ITopicRepository

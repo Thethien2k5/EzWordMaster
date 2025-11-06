@@ -1,4 +1,4 @@
-package com.example.ezwordmaster.data.repository
+package com.example.ezwordmaster.data.local.repository
 
 import android.content.Context
 import com.example.ezwordmaster.data.local.SettingsDataStore

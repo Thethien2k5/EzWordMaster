@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -56,6 +57,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental", "true")
+        arg("room.expandProjection", "true")
+    }
 }
 
 dependencies {
@@ -102,4 +108,8 @@ dependencies {
 
     // Konfetti để hiệu ứng pháo bông (confetti)
     implementation("nl.dionsegijn:konfetti-compose:2.0.4")
+    //Room Database - sử dụng KSP thay vì kapt để tránh lỗi SQLite trên Windows
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 }

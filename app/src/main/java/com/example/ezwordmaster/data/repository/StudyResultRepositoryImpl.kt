@@ -1,244 +1,256 @@
-package com.example.ezwordmaster.data.repository
+package com.example.ezwordmaster.data.local.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.ezwordmaster.data.local.dao.StudyResultDao
+import com.example.ezwordmaster.data.local.database.EzWordMasterDatabase
+import com.example.ezwordmaster.data.local.mapper.StudyResultMapper
 import com.example.ezwordmaster.domain.repository.IStudyResultRepository
 import com.example.ezwordmaster.model.StudyResult
 import com.example.ezwordmaster.model.StudyResultsList
 import com.example.ezwordmaster.model.StudyStats
 import com.example.ezwordmaster.model.TodayProgress
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
+/**
+ * Repository triển khai cho việc quản lý kết quả học tập (StudyResult).
+ * Sử dụng Room Database làm nguồn dữ liệu chính.
+ * Hỗ trợ tự động migrate một lần từ file JSON cũ nếu tồn tại.
+ *
+ * @param context Context của ứng dụng.
+ * @property studyResultDao DAO để tương tác với CSDL Room.
+ * @property ioDispatcher Sử dụng Dispatchers.IO cho mọi thao tác I/O (Database, File).
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class StudyResultRepositoryImpl(private val context: Context) : IStudyResultRepository {
 
-    private val FILE_NAME = "study_results.json"
-    private val MAX_RECORDS = 44 // Giới hạn tối đa 44 bản ghi
-    private val json = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true // Bỏ qua các field không tồn tại (startTime, endTime cũ)
-    }
+    // Tên file JSON cũ để kiểm tra và migrate
+    private val oldJsonFileName = "study_results.json"
+    private val maxRecords = 44 // Giới hạn tối đa 44 bản ghi
 
-    // Đường dẫn tới file study_results.json trong thư mục riêng của app
-    private fun getStudyResultsFile(): File = File(context.filesDir, FILE_NAME)
+    private val database = EzWordMasterDatabase.getDatabase(context)
+    private val studyResultDao: StudyResultDao = database.studyResultDao()
 
-    // Kiểm tra file có tồn tại không
+    // Luôn sử dụng Dispatchers.IO cho các tác vụ I/O của repository
+    private val ioDispatcher = Dispatchers.IO
+
     override fun isStudyResultsFileExists(): Boolean {
-        val exists = getStudyResultsFile().exists()
-        Log.d("StudyResultRepo", "File tồn tại: $exists")
-        return exists
+        val file = File(context.filesDir, oldJsonFileName)
+        return file.exists()
     }
 
-    // Tạo file mặc định nếu chưa có
-    override fun createStudyResultsFileIfMissing() {
-        val file = getStudyResultsFile()
-        if (!file.exists()) {
-            val emptyResults = StudyResultsList(results = emptyList())
-            saveStudyResults(emptyResults)
-            Log.d("StudyResultRepo", "Đã tạo file study_results.json mặc định")
+    /**
+     * Khởi tạo CSDL.
+     * Kiểm tra xem CSDL có rỗng không. Nếu rỗng, thử tìm file JSON cũ để migrate dữ liệu.
+     * Hàm này nên được gọi một lần khi ứng dụng khởi động (ví dụ: trong ViewModel).
+     */
+    override suspend fun createStudyResultsFileIfMissing() {
+        val count = studyResultDao.getResultCount()
+
+        if (count == 0) {
+            // Kiểm tra xem có file JSON cũ không, nếu có thì migrate
+            val jsonFile = File(context.filesDir, oldJsonFileName)
+            if (jsonFile.exists()) {
+                migrateFromJson(jsonFile)
+            }
+            // Nếu không có file cũ, database sẽ rỗng (đúng)
         }
     }
 
-    // Đọc dữ liệu từ file
-    override fun loadStudyResults(): StudyResultsList {
-        createStudyResultsFileIfMissing()
-        val file = getStudyResultsFile()
-
-        return try {
-            val jsonString = file.readText()
-            json.decodeFromString(jsonString)
-        } catch (e: Exception) {
-            Log.e("StudyResultRepo", "Lỗi đọc file: ${e.message}")
-            // Nếu file bị lỗi format, tạo file mới
-            StudyResultsList(results = emptyList())
-        }
-    }
-
-    // Ghi đè toàn bộ danh sách
-    private fun saveStudyResults(studyResults: StudyResultsList) {
+    /**
+     * Helper: Di chuyển dữ liệu từ file JSON cũ sang Room DB.
+     * Chỉ chạy một lần khi CSDL rỗng và file cũ tồn tại.
+     */
+    private suspend fun migrateFromJson(jsonFile: File) {
         try {
-            val jsonString = json.encodeToString(studyResults)
-            getStudyResultsFile().writeText(jsonString)
-            Log.d(
-                "StudyResultRepo",
-                "Đã lưu ${studyResults.results.size} kết quả học tập vào file."
-            )
+            val jsonString = jsonFile.readText()
+            val json = Json {
+                prettyPrint = true
+                ignoreUnknownKeys = true // Rất quan trọng để bỏ qua field cũ không dùng nữa
+            }
+
+            val studyResultsList: StudyResultsList = json.decodeFromString(jsonString)
+            val entities = studyResultsList.results.map { StudyResultMapper.toEntity(it) }
+
+            studyResultDao.insertResults(entities)
+
+            Log.d("StudyResultRepo", "Đã migrate ${entities.size} kết quả từ JSON sang Room")
+
         } catch (e: Exception) {
-            Log.e("StudyResultRepo", "Lỗi khi ghi file: ${e.message}")
+            Log.e("StudyResultRepo", "Lỗi nghiêm trọng khi migration từ JSON: ${e.message}", e)
         }
     }
 
-    // Thêm một kết quả học tập mới (với giới hạn 44 records)
-    override fun addStudyResult(newResult: StudyResult) {
-        val currentResults = loadStudyResults()
-        var updatedList = currentResults.results + newResult
+    /**
+     * Tải tất cả kết quả học tập từ CSDL.
+     */
+    override suspend fun loadStudyResults(): StudyResultsList = withContext(ioDispatcher) {
+        val entities = studyResultDao.getAllResults().first()
+        val results = entities.map { StudyResultMapper.toDomain(it) }
+        StudyResultsList(results = results)
+    }
 
-        // Nếu vượt quá 44 bản ghi, xóa bản ghi cũ nhất
-        if (updatedList.size > MAX_RECORDS) {
-            // Sắp xếp theo ngày (mới nhất trước)
-            updatedList = updatedList.sortedByDescending { parseDate(it.day) }
-            // Chỉ giữ lại 44 bản ghi mới nhất
-            updatedList = updatedList.take(MAX_RECORDS)
+    /**
+     * Thêm một kết quả học tập mới vào CSDL.
+     * Đồng thời kiểm tra và xóa bản ghi cũ nhất nếu vượt quá maxRecords.
+     */
+    override suspend fun addStudyResult(newResult: StudyResult) = withContext(ioDispatcher) {
+        val currentCount = studyResultDao.getResultCount()
+
+        if (currentCount >= maxRecords) {
+            val allResults = studyResultDao.getAllResults().first()
+            val sortedResults = allResults.sortedByDescending { parseDate(it.day) }
+
+            // Chỉ giữ lại 43 bản ghi mới nhất (để sau khi thêm mới sẽ là 44)
+            sortedResults.take(maxRecords - 1)
+            val toDelete = sortedResults.drop(maxRecords - 1)
+
+            // Xóa các bản ghi cũ
+            for (result in toDelete) {
+                studyResultDao.deleteResultById(result.id)
+            }
+
             Log.d(
                 "StudyResultRepo",
-                "Đã xóa ${updatedList.size - MAX_RECORDS} bản ghi cũ nhất để giữ giới hạn $MAX_RECORDS"
+                "Đã xóa ${toDelete.size} bản ghi cũ nhất để giữ giới hạn $maxRecords"
             )
         }
-
-        saveStudyResults(StudyResultsList(results = updatedList))
-        Log.d(
-            "StudyResultRepo",
-            "Đã thêm kết quả học tập: ${newResult.studyMode} - ${newResult.topicName}"
-        )
     }
 
-    // ================= LẤY =====================
-    // Lấy danh sách kết quả theo chế độ học
-    override fun getStudyResultsByMode(studyMode: String): List<StudyResult> {
-        val allResults = loadStudyResults()
-        return allResults.results.filter { it.studyMode == studyMode }
-    }
-
-    // Lấy danh sách kết quả theo chủ đề
-    override fun getStudyResultsByTopic(topicId: String): List<StudyResult> {
-        val allResults = loadStudyResults()
-        return allResults.results.filter { it.topicId == topicId }
-    }
-
-    // Lấy danh sách kết quả sắp xếp theo thời gian (mới nhất trước)
-    override fun getStudyResultsSortedByTime(): List<StudyResult> {
-        val allResults = loadStudyResults()
-        return allResults.results.sortedByDescending { parseDate(it.day) }
-    }
-
-    // Lấy thống kê tổng quan
-    override fun getStudyStats(): StudyStats {
-        val allResults = loadStudyResults()
-        val results = allResults.results
-
-        val totalSessions = results.size
-        val totalStudyTime = results.sumOf { it.duration }
-        val flashcardResults = results.filter { it.studyMode == "flashcard" }
-        val flipcardResults = results.filter { it.studyMode == "flipcard" }
-
-        val totalWordsLearned = flashcardResults.sumOf { it.knownWords ?: 0 }
-        val averageAccuracy = if (flashcardResults.isNotEmpty()) {
-            flashcardResults.mapNotNull { it.accuracy }.average().toFloat()
-        } else 0f
-
-        val averageCompletionRate = if (flipcardResults.isNotEmpty()) {
-            flipcardResults.mapNotNull { it.completionRate }.average().toFloat()
-        } else 0f
-
-        return StudyStats(
-            totalSessions = totalSessions,
-            totalStudyTime = totalStudyTime,
-            totalWordsLearned = totalWordsLearned,
-            averageAccuracy = averageAccuracy,
-            averageCompletionRate = averageCompletionRate
-        )
-    }
-
-    // Xóa tất cả kết quả (dùng cho testing)
-    override fun clearAllResults() {
-        saveStudyResults(StudyResultsList(results = emptyList()))
+    /**
+     * Xóa tất cả kết quả học tập khỏi CSDL.
+     */
+    override suspend fun clearAllResults() {
+        studyResultDao.deleteAllResults()
         Log.d("StudyResultRepo", "Đã xóa tất cả kết quả học tập")
     }
 
     /**
-     * Parse date string (dd/MM/yyyy) thành timestamp để so sánh
+     * Lấy danh sách kết quả theo chế độ học (studyMode).
      */
-    private fun parseDate(dateString: String): Long {
-        return try {
-            val parts = dateString.split("/")
-            if (parts.size == 3) {
-                val day = parts[0].toInt()
-                val month = parts[1].toInt() - 1 // Calendar month is 0-indexed
-                val year = parts[2].toInt()
+    override suspend fun getStudyResultsByMode(studyMode: String): List<StudyResult> =
+        withContext(ioDispatcher) {
+            val entities = studyResultDao.getResultsByMode(studyMode)
+            return@withContext entities.map { StudyResultMapper.toDomain(it) }
+        }
 
-                val calendar = java.util.Calendar.getInstance()
-                calendar.set(year, month, day, 0, 0, 0)
-                calendar.set(java.util.Calendar.MILLISECOND, 0)
-                calendar.timeInMillis
-            } else {
-                0L
-            }
+    /**
+     * Lấy danh sách kết quả theo chủ đề (topicId).
+     */
+    override suspend fun getStudyResultsByTopic(topicId: String): List<StudyResult> =
+        withContext(ioDispatcher) {
+            val entities = studyResultDao.getResultsByTopic(topicId)
+            return@withContext entities.map { StudyResultMapper.toDomain(it) }
+        }
+
+    /**
+     * Lấy danh sách kết quả sắp xếp theo thời gian (mới nhất trước).
+     */
+    override suspend fun getStudyResultsSortedByTime(): List<StudyResult> =
+        withContext(ioDispatcher) {
+            val entities = studyResultDao.getAllResults().first()
+            val sorted = entities.sortedByDescending { parseDate(it.day) }
+            return@withContext sorted.map { StudyResultMapper.toDomain(it) }
+        }
+
+    /**
+     * Lấy thống kê tổng quan (tổng số phiên, thời gian, từ...).
+     */
+    override suspend fun getStudyStats(): StudyStats = withContext(ioDispatcher) {
+        val allEntities = studyResultDao.getAllResults().first()
+        val results = allEntities.map { StudyResultMapper.toDomain(it) }
+
+        val totalSessions = results.size
+        val totalStudyTime = results.sumOf { it.duration }
+        val (totalKnownWords, totalWords) = calculateFlashcardStats(results)
+
+        return@withContext StudyStats(
+            totalSessions = totalSessions,
+            totalStudyTime = totalStudyTime,
+            totalKnownWords = totalKnownWords,
+            totalWords = totalWords
+        )
+    }
+
+    /**
+     * Lấy tiến trình học tập của một chủ đề (topicId) cụ thể TRONG HÔM NAY.
+     */
+    override suspend fun getTodayStudyProgress(topicId: String): TodayProgress =
+        withContext(ioDispatcher) {
+            val today = getCurrentDay()
+            val entities = studyResultDao.getResultsByDayAndTopic(today, topicId)
+            val results = entities.map { StudyResultMapper.toDomain(it) }
+
+            val (totalKnownWords, totalWords) = calculateFlashcardStats(results)
+            val totalSessions = results.size
+
+            return@withContext TodayProgress(
+                day = today,
+                totalSessions = totalSessions,
+                totalKnownWords = totalKnownWords,
+                totalWords = totalWords,
+                results = results
+            )
+        }
+
+    /**
+     * Lấy tổng tiến trình học tập của TẤT CẢ chủ đề TRONG HÔM NAY.
+     */
+    override suspend fun getOverallTodayProgress(): TodayProgress = withContext(ioDispatcher) {
+        val today = getCurrentDay()
+        val entities = studyResultDao.getResultsByDay(today)
+        val results = entities.map { StudyResultMapper.toDomain(it) }
+
+        val (totalKnownWords, totalWords) = calculateFlashcardStats(results)
+        val totalSessions = results.size
+
+        return@withContext TodayProgress(
+            day = today,
+            totalSessions = totalSessions,
+            totalKnownWords = totalKnownWords,
+            totalWords = totalWords,
+            results = results
+        )
+    }
+
+    // ================= HELPER FUNCTIONS =====================
+
+    /**
+     * Helper: Tính tổng số từ (known/total) từ danh sách kết quả (chỉ tính mode 'flashcard').
+     */
+    private fun calculateFlashcardStats(results: List<StudyResult>): Pair<Int, Int> {
+        val flashcardResults = results.filter { it.studyMode == "flashcard" }
+        val totalKnownWords = flashcardResults.sumOf { it.knownWords ?: 0 }
+        val totalWords = flashcardResults.sumOf { it.totalWords ?: 0 }
+        return Pair(totalKnownWords, totalWords)
+    }
+
+    /**
+     * Helper: Lấy ngày hiện tại (dd/MM/yyyy).
+     */
+    private fun getCurrentDay(): String {
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return dateFormat.format(Date())
+    }
+
+    /**
+     * Helper: Chuyển đổi chuỗi ngày (dd/MM/yyyy) sang đối tượng Date để so sánh/sắp xếp.
+     */
+    private fun parseDate(day: String): Date {
+        return try {
+            val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            format.parse(day) ?: Date(0)
         } catch (e: Exception) {
-            Log.e("StudyResultRepo", "Lỗi parse date: $dateString - ${e.message}")
-            0L
+            Log.w("StudyResultRepo", "Lỗi parse ngày: $day", e)
+            Date(0)
         }
     }
-
-    /**
-     * Lấy tất cả kết quả ôn tập trong ngày hôm nay
-     * Nếu nhiều lần ôn tập trong ngày thì cộng số từ vựng lại
-     */
-    override fun getTodayStudyProgress(topicId: String): TodayProgress {
-        val allResults = loadStudyResults()
-        val today = getCurrentDay()
-
-        // Lọc kết quả của ngày hôm nay VÀ theo đúng topicId
-        val todayTopicResults =
-            allResults.results.filter { it.day == today && it.topicId == topicId }
-
-        // Tính tổng số từ đã ôn tập trong ngày
-        val totalKnownWords = todayTopicResults
-            .filter { it.studyMode == "flashcard" }
-            .sumOf { it.knownWords ?: 0 }
-
-        val totalWords = todayTopicResults
-            .filter { it.studyMode == "flashcard" }
-            .sumOf { it.totalWords ?: 0 }
-
-        val totalSessions = todayTopicResults.size
-
-        return TodayProgress(
-            day = today,
-            totalSessions = totalSessions,
-            totalKnownWords = totalKnownWords,
-            totalWords = totalWords,
-            results = todayTopicResults
-        )
-    }
-
-    /**
-    //     * Lấy ngày hiện tại (dd/MM/yyyy)
-    //     */
-    private fun getCurrentDay(): String {
-        val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
-        return dateFormat.format(java.util.Date())
-    }
-
-    /**
-     *  Lấy tổng tiến trình của TẤT CẢ các chủ đề trong ngày
-     */
-    override fun getOverallTodayProgress(): TodayProgress {
-        val allResults = loadStudyResults()
-        val today = getCurrentDay()
-
-        // Chỉ lọc theo ngày, không lọc theo topicId
-        val todayAllResults = allResults.results.filter { it.day == today }
-
-        val totalKnownWords = todayAllResults
-            .filter { it.studyMode == "flashcard" }
-            .sumOf { it.knownWords ?: 0 }
-
-        val totalWords = todayAllResults
-            .filter { it.studyMode == "flashcard" }
-            .sumOf { it.totalWords ?: 0 }
-
-        val totalSessions = todayAllResults.size
-
-        return TodayProgress(
-            day = today,
-            totalSessions = totalSessions,
-            totalKnownWords = totalKnownWords,
-            totalWords = totalWords,
-            results = todayAllResults
-        )
-    }
 }
-

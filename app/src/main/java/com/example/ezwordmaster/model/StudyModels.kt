@@ -91,9 +91,8 @@ data class StudyResultsList(
 data class StudyStats(
     val totalSessions: Int,
     val totalStudyTime: Long, // giây
-    val totalWordsLearned: Int,
-    val averageAccuracy: Float,
-    val averageCompletionRate: Float
+    val totalKnownWords: Int,
+    val totalWords: Int
 )
 
 data class TodayProgress(
