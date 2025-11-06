@@ -3,9 +3,11 @@ package com.example.ezwordmaster.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType // <-- THÊM IMPORT
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument // <-- THÊM IMPORT
 import com.example.ezwordmaster.model.MainTab
 import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.screens.IntroScreen
@@ -14,7 +16,7 @@ import com.example.ezwordmaster.ui.screens.about.AboutScreen
 import com.example.ezwordmaster.ui.screens.help.HelpScreen
 import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
 import com.example.ezwordmaster.ui.screens.notification.NotificationScreen
-import com.example.ezwordmaster.ui.screens.regime.PracticeScreen
+// import com.example.ezwordmaster.ui.screens.regime.PracticeScreen // <-- XÓA IMPORT THỪA
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.regime.ResultScreen
 import com.example.ezwordmaster.ui.screens.regime.WordPracticeScreen
@@ -25,12 +27,13 @@ import com.example.ezwordmaster.ui.screens.regime.practice.flash.FlashcardScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.EssayQuizScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.MultiChoiceQuizScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.TrueFalseQuizScreen
-import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
+// import com.example.ezwordmaster.ui.screens.settings.SettingsScreen // <-- XÓA IMPORT THỪA
 import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
-import com.example.ezwordmaster.ui.screens.translation.TranslationScreen
+// import com.example.ezwordmaster.ui.screens.translation.TranslationScreen // <-- XÓA IMPORT THỪA
+import java.net.URLDecoder // <-- THÊM IMPORT
 
 @Composable
 fun AppNavHost(
@@ -51,6 +54,7 @@ fun AppNavHost(
             val initialTab = when (selectedTabString) {
                 "PRACTICE" -> MainTab.PRACTICE
                 "SETTINGS" -> MainTab.SETTINGS
+                "TRANSLATION" -> MainTab.TRANSLATION // <-- Bổ sung route cho tab Dịch
                 else -> MainTab.MANAGEMENT
             }
             MainHomeScreen(
@@ -68,15 +72,10 @@ fun AppNavHost(
         composable("help") {
             HelpScreen(navController = navController)
         }
-        composable("settings") {
-            SettingsScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
-        }
+
+        //*** XÓA ROUTE "settings" THỪA (vì MainHomeScreen đã xử lý) ***
 
         //*** ======= THÊM MÀN HÌNH MỚI ======= ***///
-        // SỬA TỪ "notificationscreen" THÀNH "notifications"
         composable("notifications") {
             val viewModel = viewModel<com.example.ezwordmaster.ui.screens.notification.NotificationViewModel>(factory = factory)
             NotificationScreen(
@@ -85,13 +84,7 @@ fun AppNavHost(
             )
         }
 
-        composable("translation") {
-            val viewModel = viewModel<com.example.ezwordmaster.ui.screens.translation.TranslationViewModel>(factory = factory)
-            TranslationScreen(
-                onBackClick = { navController.popBackStack() },
-                viewModel = viewModel
-            )
-        }
+        //*** XÓA ROUTE "translation" THỪA (vì MainHomeScreen đã xử lý) ***
 
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
         composable("topicmanagementscreen") {
@@ -101,23 +94,44 @@ fun AppNavHost(
             )
         }
 
-        composable("edittopic/{topicId}") { backStackEntry ->
+        // ############ SỬA LẠI ROUTE NÀY ############
+        composable(
+            route = "edittopic/{topicId}?word={word}&meaning={meaning}", // Sửa route
+            arguments = listOf(
+                navArgument("topicId") { type = NavType.StringType },
+                navArgument("word") { // Thêm argument
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("meaning") { // Thêm argument
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
             val topicId = backStackEntry.arguments?.getString("topicId") ?: ""
+
+            // Lấy và giải mã (decode) 2 tham số mới
+            val word = backStackEntry.arguments?.getString("word")?.let {
+                URLDecoder.decode(it, "UTF-8")
+            }
+            val meaning = backStackEntry.arguments?.getString("meaning")?.let {
+                URLDecoder.decode(it, "UTF-8")
+            }
+
             EditTopicScreen(
                 navController = navController,
                 topicId = topicId,
+                initialWord = word,     // <-- Truyền tham số mới
+                initialMeaning = meaning, // <-- Truyền tham số mới
                 viewModel = viewModel(factory = factory)
             )
         }
+        // #############################################
+
+        //*** XÓA ROUTE "practice" THỪA (vì MainHomeScreen đã xử lý) ***
 
         // ======= ÔN TẬP =======///
-        composable("practice") {
-            PracticeScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
-        }
-
         composable("studyhistory") {
             StudyHistoryScreen(
                 navController = navController,

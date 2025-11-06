@@ -3,7 +3,7 @@ package com.example.ezwordmaster.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.material3.Typography
+// import androidx.compose.material3.Typography // <-- Dòng này phải bị xóa hoặc comment đi
 
 @Composable
 fun EzWordMasterTheme(
@@ -14,7 +14,7 @@ fun EzWordMasterTheme(
 
     MaterialTheme(
         colorScheme = colors,
-        typography = Typography(),
+        typography = AppTypography, // <-- PHẢI LÀ "AppTypography"
         content = content
     )
 }

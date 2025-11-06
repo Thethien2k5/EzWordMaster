@@ -48,6 +48,11 @@ class TopicViewModel(
         }
     }
 
+    // SỬA: Thêm hàm này (đã bị thiếu ở chat trước)
+    fun clearSelectedTopic() {
+        _SELECTEDTOPIC.value = null
+    }
+
     //Thêm một chủ đề mới chỉ với tên.
     fun addTopic(name: String) {
         viewModelScope.launch {
@@ -62,15 +67,42 @@ class TopicViewModel(
     }
 
 
-    //Cập nhật tên của một chủ đề đã có.
+    /**
+     * SỬA: Nâng cấp hàm này để xử lý "Tạo mới" (khi id == "new")
+     * Nó sẽ tự động tạo topic mới và set _SELECTEDTOPIC.
+     */
     fun updateTopicName(id: String, newName: String) {
         viewModelScope.launch {
             if (TOPICREPOSITORY.topicNameExists(newName)) {
                 _TOASTMESSAGE.value = "Chủ đề '$newName' đã tồn tại."
                 return@launch
             }
-            TOPICREPOSITORY.updateTopicName(id, newName)
-            loadTopicById(id) // Tải lại topic hiện tại để cập nhật tên
+
+            // KIỂM TRA LOGIC TẠO MỚI (TỪ MÀN HÌNH DỊCH)
+            if (id == "new" || id.isBlank()) {
+                // 1. Tạo topic mới
+                TOPICREPOSITORY.addNameTopic(newName)
+
+                // 2. Tải lại toàn bộ danh sách
+                // (loadTopics() là suspend, nên phải gọi trực tiếp từ repo)
+                val allTopics = TOPICREPOSITORY.loadTopics()
+                _TOPICS.value = allTopics
+
+                // 3. Tìm topic vừa tạo (dựa theo tên)
+                val newTopic = allTopics.find { it.name == newName }
+
+                // 4. Cập nhật _SELECTEDTOPIC
+                _SELECTEDTOPIC.value = newTopic
+
+                if(newTopic != null) {
+                    _TOASTMESSAGE.value = "Đã tạo chủ đề '${newName}'."
+                }
+
+            } else {
+                // LOGIC CŨ: Cập nhật topic đã có
+                TOPICREPOSITORY.updateTopicName(id, newName)
+                loadTopicById(id) // Tải lại topic hiện tại để cập nhật tên
+            }
         }
     }
 

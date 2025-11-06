@@ -56,6 +56,8 @@ import kotlinx.coroutines.launch
 fun EditTopicScreen(
     navController: NavHostController,
     topicId: String,
+    initialWord: String?,
+    initialMeaning: String?,
     viewModel: TopicViewModel
 ) {
     val TOPIC by viewModel.selectedTopic.collectAsState()
@@ -71,18 +73,43 @@ fun EditTopicScreen(
     var showEditWordDialog by remember { mutableStateOf(false) }
     var selectedWord by remember { mutableStateOf<Word?>(null) }
 
+    var wordToAddFromTranslation by remember { mutableStateOf<Word?>(null) }
+    var currentTopicId by remember { mutableStateOf(topicId) }
+
     LaunchedEffect(TOASTMESSAGE) {
         TOASTMESSAGE?.let { message ->
             COROUTINESCOPE.launch {
                 SNACKBARHOSTSTATE.showSnackbar(message)
             }
-            viewModel.clearToastMessage() // Rất quan trọng: Xóa lỗi sau khi hiển thị
+            viewModel.clearToastMessage()
         }
     }
 
-    // Hàm để tải lại dữ liệu chủ đề sau khi có thay đổi
+    LaunchedEffect(TOPIC) {
+        TOPIC?.id?.let {
+            if (it != currentTopicId) {
+                currentTopicId = it
+            }
+        }
+    }
+
     LaunchedEffect(topicId) {
-        viewModel.loadTopicById(topicId)
+        if (topicId != "new" && topicId.isNotBlank()) {
+            viewModel.loadTopicById(topicId)
+        }
+        // SỬA 5: Xóa hàm "clearSelectedTopic()" không tồn tại
+        // Logic UI bên dưới đã xử lý trường hợp TOPIC là null
+    }
+
+    LaunchedEffect(initialWord, initialMeaning, topicId) {
+        if (initialWord != null && initialMeaning != null) {
+            wordToAddFromTranslation = Word(initialWord, initialMeaning)
+            if (topicId == "new" || topicId.isBlank()) {
+                showEditNameDialog = true
+            } else {
+                showAddWordDialog = true
+            }
+        }
     }
 
     AppBackground {
@@ -103,13 +130,12 @@ fun EditTopicScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Nút quay lại
                     Image(
                         painter = painterResource(id = R.drawable.return_),
                         contentDescription = "Back",
                         modifier = Modifier
                             .size(40.dp)
-                            .clickable { navController.navigate("home/MANAGEMENT") }
+                            .clickable { navController.popBackStack() } // Sửa: Dùng popBackStack
                     )
 
                     // Tên chủ đề + Icon sửa
@@ -119,7 +145,7 @@ fun EditTopicScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = TOPIC?.name ?: "",
+                            text = TOPIC?.name ?: (if (topicId == "new") "Chủ đề mới" else ""),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
@@ -135,15 +161,18 @@ fun EditTopicScreen(
                         )
                     }
 
-                    // Icon xóa chủ đề
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_delete),
-                        contentDescription = "Delete topic",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable { showDeleteTopicDialog = true },
-                        tint = Color.Red
-                    )
+                    if (topicId != "new" && topicId.isNotBlank()) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_delete),
+                            contentDescription = "Delete topic",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable { showDeleteTopicDialog = true },
+                            tint = Color.Red
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.size(32.dp))
+                    }
                 }
 
                 // Thanh tìm kiếm
@@ -176,7 +205,10 @@ fun EditTopicScreen(
 
                 // Nút thêm từ vựng
                 Button(
-                    onClick = { showAddWordDialog = true },
+                    onClick = {
+                        wordToAddFromTranslation = null
+                        showAddWordDialog = true
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -241,10 +273,20 @@ fun EditTopicScreen(
         if (showEditNameDialog) {
             EditTopicNameDialog(
                 currentName = TOPIC?.name ?: "",
-                onDismiss = { showEditNameDialog = false },
-                onConfirm = { newName ->
-                    viewModel.updateTopicName(topicId, newName)
+                onDismiss = {
                     showEditNameDialog = false
+                    if (wordToAddFromTranslation != null) {
+                        wordToAddFromTranslation = null
+                        navController.popBackStack()
+                    }
+                },
+                onConfirm = { newName ->
+                    viewModel.updateTopicName(currentTopicId, newName)
+                    showEditNameDialog = false
+
+                    if (wordToAddFromTranslation != null) {
+                        showAddWordDialog = true
+                    }
                 }
             )
         }
@@ -253,11 +295,26 @@ fun EditTopicScreen(
         if (showAddWordDialog) {
             AddEditWordDialog(
                 title = "Thêm từ vựng",
-                word = null,
-                onDismiss = { showAddWordDialog = false },
-                onConfirm = { newWord ->
-                    viewModel.addWordToTopic(topicId, newWord)
+                word = wordToAddFromTranslation,
+                onDismiss = {
                     showAddWordDialog = false
+                    wordToAddFromTranslation = null
+                },
+                onConfirm = { newWord ->
+                    val idToUse = TOPIC?.id ?: currentTopicId
+
+                    if (idToUse == "new" || idToUse.isBlank()) {
+                        COROUTINESCOPE.launch {
+                            SNACKBARHOSTSTATE.showSnackbar("Lỗi: Không tìm thấy chủ đề. Vui lòng thử lại.")
+                        }
+                    } else {
+                        viewModel.addWordToTopic(idToUse, newWord)
+                        showAddWordDialog = false
+                        wordToAddFromTranslation = null
+                        if (initialWord != null) {
+                            navController.popBackStack()
+                        }
+                    }
                 }
             )
         }
@@ -272,12 +329,12 @@ fun EditTopicScreen(
                     selectedWord = null
                 },
                 onConfirm = { newWord ->
-                    viewModel.updateWordInTopic(topicId, selectedWord!!, newWord)
+                    viewModel.updateWordInTopic(currentTopicId, selectedWord!!, newWord)
                     showEditWordDialog = false
                     selectedWord = null
                 },
                 onDelete = {
-                    viewModel.deleteWordFromTopic(topicId, selectedWord!!)
+                    viewModel.deleteWordFromTopic(currentTopicId, selectedWord!!)
                     showEditWordDialog = false
                     selectedWord = null
                 }

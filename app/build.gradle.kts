@@ -134,5 +134,10 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
     // Dịch thuật Offline của Google
-    implementation("com.google.mlkit:translate:17.0.2")
+    implementation("com.google.mlkit:translate:17.0.3")
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation("com.google.android.gms:play-services-base")
+    implementation("com.google.android.gms:play-services-ads:22.3.0")
+    implementation("androidx.compose.ui:ui:1.5.0")
+    implementation("androidx.compose.material3:material3:1.2.0")
 }

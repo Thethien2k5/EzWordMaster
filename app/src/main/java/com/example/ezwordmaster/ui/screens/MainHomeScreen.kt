@@ -147,7 +147,8 @@ fun MainHomeScreen(
                                 factory = factory
                             )
                             TranslationScreen(
-                                onBackClick = { /* Không cần vì đã có bottom nav */ },
+                                // onBackClick = { /* Không cần vì đã có bottom nav */ },
+                                navController = navController, // <-- THÊM DÒNG NÀY
                                 viewModel = viewModel
                             )
                         }
