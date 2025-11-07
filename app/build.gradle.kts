@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.googleGms)
 }
 
 android {
@@ -75,6 +76,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
 
     // Compose UI
+    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -112,4 +114,16 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
+
+    //icon
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Firebase (Auth, Firestore, Analytics)
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
+    // Google Sign-In for Firebase
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 }

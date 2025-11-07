@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "920781645813",
+    "project_id": "admin-d23b7",
+    "storage_bucket": "admin-d23b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:920781645813:android:e5e230cf9653304fcca2bc",
+        "android_client_info": {
+          "package_name": "com.example.ezwordmaster"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "920781645813-i7b5s1kgi0o6ivceusiiv3bmm1qumh1g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ezwordmaster",
+            "certificate_hash": "b0b53c3f422637c2c32d7b0399b396a6a8c21bd1"
+          }
+        },
+        {
+          "client_id": "920781645813-8ntemokb3c66pa0s9af8hduvij5jh576.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK_BnKFVSHXVT-Ir-7PCbA8o5ag-n2ZC4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "920781645813-8ntemokb3c66pa0s9af8hduvij5jh576.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

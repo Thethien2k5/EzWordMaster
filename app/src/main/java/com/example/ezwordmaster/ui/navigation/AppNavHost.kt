@@ -3,14 +3,20 @@ package com.example.ezwordmaster.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.ezwordmaster.model.MainTab
 import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.MainHomeScreen
 import com.example.ezwordmaster.ui.screens.about.AboutScreen
+import com.example.ezwordmaster.ui.screens.admin.ForgotPasswordScreen
+import com.example.ezwordmaster.ui.screens.admin.RegisterScreen
+import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
+import com.example.ezwordmaster.ui.screens.auth.UserLoginScreen
 import com.example.ezwordmaster.ui.screens.help.HelpScreen
 import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
 import com.example.ezwordmaster.ui.screens.notification.NotificationScreen
@@ -25,7 +31,6 @@ import com.example.ezwordmaster.ui.screens.regime.practice.flash.FlashcardScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.EssayQuizScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.MultiChoiceQuizScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.TrueFalseQuizScreen
-import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
 import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
@@ -36,10 +41,47 @@ fun AppNavHost(
     factory: ViewModelFactory,
     navController: NavHostController = rememberNavController()
 ) {
+    val AUTHVIEWMODEL: AuthViewModel = viewModel(factory = factory)
+    val TOPICVIEWMODEL: TopicViewModel = viewModel(factory = factory)
+    // =======================================================
     NavHost(
         navController = navController,
         startDestination = "home/MANAGEMENT"
     ) {
+
+        //*** ======= AUTHENTICATION ======= ***///
+        composable(
+            route = "login?next={next}",
+            arguments = listOf(
+                navArgument("next") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) {
+            UserLoginScreen(
+                navController = navController,
+                factory = factory,
+                authViewModel = AUTHVIEWMODEL
+            )
+        }
+
+        composable("register") {
+            RegisterScreen(
+                navController = navController,
+                factory = factory,
+                authViewModel = AUTHVIEWMODEL
+            )
+        }
+
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                navController = navController,
+                factory = factory,
+                authViewModel = AUTHVIEWMODEL
+            )
+        }
         //*** ======= HOME và VÀI THỨ KHÁC ======= ***///
         composable("intro") { IntroScreen(navController = navController) }
 //        composable("home") { HomeScreen(navController = navController) }
@@ -53,8 +95,9 @@ fun AppNavHost(
             }
             MainHomeScreen(
                 navController = navController,
-                // Chỉ định rõ loại ViewModel cho từng tham số
-                topicViewModel = viewModel<TopicViewModel>(factory = factory),
+                // Truyền các SSoT xuống MainHomeScreen
+                authViewModel = AUTHVIEWMODEL,
+                topicViewModel = TOPICVIEWMODEL,
                 practiceViewModel = viewModel<PracticeViewModel>(factory = factory),
                 settingsViewModel = viewModel<SettingsViewModel>(factory = factory),
                 initialTab = initialTab
@@ -62,22 +105,14 @@ fun AppNavHost(
         }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }
-//        composable("translate") { TranslateScreen(navController = navController) }
-        composable("settings") {
-            SettingsScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
-        }
         composable("notificationscreen") { NotificationScreen(navController = navController) }
-
 
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
         //danh sách chủ đề
         composable("topicmanagementscreen") {
             TopicManagementScreen(
                 navController = navController,
-                viewModel = viewModel(factory = factory)
+                TOPICVIEWMODEL
             )
         }
         // chỉnh sửa chủ đề cụ để
@@ -86,7 +121,7 @@ fun AppNavHost(
             EditTopicScreen(
                 navController = navController,
                 topicId = topicId,
-                viewModel = viewModel(factory = factory)
+                TOPICVIEWMODEL
             )
         }
 

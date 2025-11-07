@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.MainTab
+import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
 import com.example.ezwordmaster.ui.screens.regime.PracticeScreen
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
@@ -56,6 +57,7 @@ fun MainHomeScreen(
     topicViewModel: TopicViewModel,
     practiceViewModel: PracticeViewModel,
     settingsViewModel: SettingsViewModel,
+    authViewModel: AuthViewModel,
     initialTab: MainTab = MainTab.MANAGEMENT
 
 ) {
@@ -133,6 +135,7 @@ fun MainHomeScreen(
                         MainTab.SETTINGS -> {
                             SettingsScreen(
                                 navController = navController,
+                                authViewModel = authViewModel,
                                 viewModel = settingsViewModel
                             )
                         }
