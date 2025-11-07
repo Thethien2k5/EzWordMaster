@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.MainTab
@@ -56,6 +57,7 @@ fun MainHomeScreen(
     topicViewModel: TopicViewModel,
     practiceViewModel: PracticeViewModel,
     settingsViewModel: SettingsViewModel,
+    factory: ViewModelProvider.Factory,
     initialTab: MainTab = MainTab.MANAGEMENT
 
 ) {
@@ -133,7 +135,8 @@ fun MainHomeScreen(
                         MainTab.SETTINGS -> {
                             SettingsScreen(
                                 navController = navController,
-                                viewModel = settingsViewModel
+                                viewModel = settingsViewModel,
+                                factory = factory
                             )
                         }
                     }

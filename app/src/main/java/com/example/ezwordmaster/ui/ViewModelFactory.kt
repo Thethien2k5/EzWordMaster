@@ -2,6 +2,7 @@ package com.example.ezwordmaster.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.ezwordmaster.ui.screens.admin.AuthViewModel
 import com.example.ezwordmaster.ui.screens.history.HistoryViewModel
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.regime.ResultViewModel
@@ -53,6 +54,14 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(QuizViewModel::class.java) -> {
                 QuizViewModel(CONTAINER.topicRepository, CONTAINER.studyResultRepository) as T
+            }
+
+            modelClass.isAssignableFrom(AuthViewModel::class.java) -> {
+                // Bơm cả AuthRepository và UserRepository để ViewModel làm việc với interface.
+                AuthViewModel(
+                    CONTAINER.authRepository,
+                    CONTAINER.userRepository
+                ) as T
             }
             // Thêm các ViewModel khác ở đây...
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

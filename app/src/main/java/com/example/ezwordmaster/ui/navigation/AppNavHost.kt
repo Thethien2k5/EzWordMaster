@@ -3,11 +3,15 @@ package com.example.ezwordmaster.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.ezwordmaster.model.MainTab
 import com.example.ezwordmaster.ui.ViewModelFactory
+import com.example.ezwordmaster.ui.common.AuthState
+import com.example.ezwordmaster.ui.common.RedirectToLogin
 import com.example.ezwordmaster.ui.screens.IntroScreen
 import com.example.ezwordmaster.ui.screens.MainHomeScreen
 import com.example.ezwordmaster.ui.screens.about.AboutScreen
@@ -30,6 +34,9 @@ import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
+import com.example.ezwordmaster.ui.screens.admin.ForgotPasswordScreen
+import com.example.ezwordmaster.ui.screens.admin.RegisterScreen
+import com.example.ezwordmaster.ui.screens.admin.UserLoginScreen
 
 @Composable
 fun AppNavHost(
@@ -40,9 +47,29 @@ fun AppNavHost(
         navController = navController,
         startDestination = "home/MANAGEMENT"
     ) {
+        composable(
+            route = "login?next={next}",
+            arguments = listOf(
+                navArgument("next") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) {
+            UserLoginScreen(navController = navController, factory = factory)
+        }
+
+        composable("register") {
+            RegisterScreen(navController = navController, factory = factory)
+        }
+
+        composable("forgot_password") {
+            ForgotPasswordScreen(navController = navController, factory = factory)
+        }
+
         //*** ======= HOME và VÀI THỨ KHÁC ======= ***///
         composable("intro") { IntroScreen(navController = navController) }
-//        composable("home") { HomeScreen(navController = navController) }
 
         composable("home/{selectedTab}") { backStackEntry ->
             val selectedTabString = backStackEntry.arguments?.getString("selectedTab")
@@ -53,23 +80,25 @@ fun AppNavHost(
             }
             MainHomeScreen(
                 navController = navController,
-                // Chỉ định rõ loại ViewModel cho từng tham số
                 topicViewModel = viewModel<TopicViewModel>(factory = factory),
                 practiceViewModel = viewModel<PracticeViewModel>(factory = factory),
                 settingsViewModel = viewModel<SettingsViewModel>(factory = factory),
+                factory = factory,
                 initialTab = initialTab
             )
         }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }
-//        composable("translate") { TranslateScreen(navController = navController) }
         composable("settings") {
             SettingsScreen(
                 navController = navController,
-                viewModel = viewModel(factory = factory)
+                viewModel = viewModel(factory = factory),
+                factory = factory
             )
         }
-        composable("notificationscreen") { NotificationScreen(navController = navController) }
+        composable("notificationscreen") {
+            NotificationScreen(navController = navController)
+        }
 
 
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
@@ -170,12 +199,11 @@ fun AppNavHost(
             val topicName = backStackEntry.arguments?.getString("topicName")
             val matchedPairs =
                 backStackEntry.arguments?.getString("matchedPairs")?.toIntOrNull() ?: 0
-
             FlipResultScreen(
                 navController = navController,
                 topicId = topicId,
-                topicName = topicName, // Truyền topicName vào
-                matchedPairs = matchedPairs // Sửa tên biến cho nhất quán
+                topicName = topicName,
+                matchedPairs = matchedPairs
             )
         }
 
