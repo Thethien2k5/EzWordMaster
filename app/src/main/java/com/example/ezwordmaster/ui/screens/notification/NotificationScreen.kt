@@ -25,17 +25,14 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -51,7 +48,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,7 +59,7 @@ import com.example.ezwordmaster.data.local.entity.NotificationEntity
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class) // Tắt thông báo đang phá triển API
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(
     navController: NavHostController,
@@ -93,60 +89,57 @@ fun NotificationScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    // SỬA 2: Đưa Text vào `title`
-                    Text(
-                        text = "Danh sách thông báo",
-                        // modifier = Modifier.fillMaxWidth(), // Không cần fillMaxWidth
-                        // .offset(x = (-24).dp), // Không cần offset, nó tự căn giữa
-                        textAlign = TextAlign.Center,
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Black,
-                        style = TextStyle(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF00BCD4), Color(0xFF2196F3))
-                            )
-                        )
-                    )
-                },
-                navigationIcon = {
-                    // SỬA 3: Đưa Image vào `navigationIcon` dùng IconButton
-                    IconButton(onClick = { navController.navigate("home/$text") }) {
-                        Image(
-                            painter = painterResource(id = R.drawable.return_),
-                            contentDescription = "Back",
-                            modifier = Modifier.size(45.dp)
-                            // .offset(10.dp) // Không cần offset
-                        )
-                    }
-                },
-                // SỬA 4: Đây là phần quan trọng nhất để xóa màu trắng
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Background
+        Image(
+            painter = painterResource(id = R.drawable.bg),
+            contentDescription = "Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // Custom Top Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Back button
+            IconButton(
+                onClick = { navController.navigate("home/$text") },
+                modifier = Modifier.size(45.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.return_),
+                    contentDescription = "Back",
+                    modifier = Modifier.size(45.dp)
                 )
+            }
+
+            // Title
+            Text(
+                text = "Danh sách thông báo",
+                textAlign = TextAlign.Center,
+                fontSize = 23.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.Black,
+                modifier = Modifier.weight(1f)
             )
-        },
-        containerColor = Color.Transparent
-    ) { innerPadding ->
-        Box(
+
+            // Empty space to balance the layout
+            Spacer(modifier = Modifier.size(45.dp))
+        }
+
+        // Content
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(top = 80.dp) // Điều chỉnh khoảng cách từ top
         ) {
-
-            // ############ SỬA 3: THAY THẾ AsyncImage BẰNG Image ############
-            Image(
-                painter = painterResource(id = R.drawable.bg), // Dùng painterResource
-                contentDescription = "Background",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            // #############################################################
-
-            // Content
             if (notifications.isEmpty()) {
                 EmptyNotifications()
             } else {
