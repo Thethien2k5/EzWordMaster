@@ -3,6 +3,7 @@ package com.example.ezwordmaster.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
+import com.example.ezwordmaster.ui.screens.backup.BackupViewModel
 import com.example.ezwordmaster.ui.screens.history.HistoryViewModel
 import com.example.ezwordmaster.ui.screens.notification.NotificationViewModel
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
@@ -75,6 +76,24 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(TranslationViewModel::class.java) -> {
                 TranslationViewModel(CONTAINER.translationRepository) as T
+            }
+
+            modelClass.isAssignableFrom(BackupViewModel::class.java) -> {
+                // 1. Lấy userId từ AuthRepository (phải đăng nhập)
+                val userId = CONTAINER.authRepository.currentUser?.uid
+                    ?: throw IllegalStateException("User phải đăng nhập để truy cập BackupViewModel")
+
+                // 2. Dùng AppContainer để TẠO các cloud repo với userId đó
+                val cloudTopicRepo = CONTAINER.createCloudTopicRepository(userId)
+                val cloudStudyResultRepo = CONTAINER.createCloudStudyResultRepository(userId)
+
+                // 3. Tạo ViewModel
+                BackupViewModel(
+                    topicRepository = CONTAINER.topicRepository,
+                    studyResultRepository = CONTAINER.studyResultRepository,
+                    cloudTopicRepo = cloudTopicRepo,
+                    cloudStudyResultRepo = cloudStudyResultRepo
+                ) as T
             }
             // Thêm các ViewModel khác ở đây...
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

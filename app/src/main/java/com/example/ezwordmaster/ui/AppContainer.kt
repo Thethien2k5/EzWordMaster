@@ -1,6 +1,8 @@
 package com.example.ezwordmaster.ui
 
 import android.content.Context
+import com.example.ezwordmaster.data.cloud.CloudStudyResultRepository
+import com.example.ezwordmaster.data.cloud.CloudTopicRepository
 import com.example.ezwordmaster.data.local.database.EzWordMasterDatabase
 import com.example.ezwordmaster.data.local.repository.SettingsRepositoryImpl
 import com.example.ezwordmaster.data.local.repository.StudyResultRepositoryImpl
@@ -11,6 +13,8 @@ import com.example.ezwordmaster.data.repository.NotificationRepositoryImpl
 import com.example.ezwordmaster.data.repository.TranslationRepositoryImpl
 import com.example.ezwordmaster.data.repository.UserRepositoryImpl
 import com.example.ezwordmaster.domain.repository.IAuthRepository
+import com.example.ezwordmaster.domain.repository.ICloudStudyResultRepository
+import com.example.ezwordmaster.domain.repository.ICloudTopicRepository
 import com.example.ezwordmaster.domain.repository.INotificationRepository
 import com.example.ezwordmaster.domain.repository.ISettingsRepository
 import com.example.ezwordmaster.domain.repository.IStudyResultRepository
@@ -98,6 +102,20 @@ class AppContainer(private val context: Context) {
         NotificationRepositoryImpl(
             notificationDao = database.notificationDao()
         )
+    }
+
+    /**
+     * Tạo một instance của CloudTopicRepository cho một user cụ thể
+     */
+    fun createCloudTopicRepository(userId: String): ICloudTopicRepository {
+        return CloudTopicRepository(userId)
+    }
+
+    /**
+     * Tạo một instance của CloudStudyResultRepository cho một user cụ thể
+     */
+    fun createCloudStudyResultRepository(userId: String): ICloudStudyResultRepository {
+        return CloudStudyResultRepository(userId)
     }
 
 

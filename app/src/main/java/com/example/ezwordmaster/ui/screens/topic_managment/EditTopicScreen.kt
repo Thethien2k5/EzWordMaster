@@ -233,7 +233,7 @@ fun EditTopicScreen(
                 onConfirm = {
                     viewModel.deleteTopicById(topicId)
                     showDeleteTopicDialog = false
-                    navController.popBackStack()
+                    navController.navigate("home/MANAGEMENT")
                 }
             )
         }

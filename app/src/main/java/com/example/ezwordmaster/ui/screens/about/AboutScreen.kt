@@ -73,8 +73,8 @@ fun AboutScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Phiên bản 2.0.0\n" +
-                                "Phát triển bởi HKT2Ez\n\n" +
-                                "WordMaster là người bạn đồng hành lý tưởng trên hành trình chinh " +
+                                "Phát triển bởi HKT2\n\n" +
+                                "EzWordMaster là người bạn đồng hành lý tưởng trên hành trình chinh " +
                                 "phục từ vựng tiếng Anh của bạn. Ứng dụng được thiết kế để giúp " +
                                 "bạn học từ mới một cách hiệu quả và thú vị thông qua các phương " +
                                 "pháp đa dạng như flashcard trực quan, các bài trắc nghiệm " +

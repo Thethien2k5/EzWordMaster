@@ -1,6 +1,7 @@
 package com.example.ezwordmaster.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -17,6 +18,7 @@ import com.example.ezwordmaster.ui.screens.admin.ForgotPasswordScreen
 import com.example.ezwordmaster.ui.screens.admin.RegisterScreen
 import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
 import com.example.ezwordmaster.ui.screens.auth.UserLoginScreen
+import com.example.ezwordmaster.ui.screens.backup.BackupScreen
 import com.example.ezwordmaster.ui.screens.help.HelpScreen
 import com.example.ezwordmaster.ui.screens.history.StudyHistoryScreen
 import com.example.ezwordmaster.ui.screens.notification.NotificationScreen
@@ -102,6 +104,24 @@ fun AppNavHost(
 //                settingsViewModel = viewModel<SettingsViewModel>(factory = factory),
                 initialTab = initialTab
             )
+        }
+        composable("backup") {
+            // Kiểm tra user đã đăng nhập chưa
+            val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+
+            if (currentUser == null) {
+                // Redirect về login nếu chưa đăng nhập
+                LaunchedEffect(Unit) {
+                    navController.navigate("login?next=home/SETTINGS") {
+                        popUpTo("backup") { inclusive = true }
+                    }
+                }
+            } else {
+                BackupScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory)
+                )
+            }
         }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }

@@ -1,6 +1,8 @@
 package com.example.ezwordmaster.ui.screens.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +30,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -36,6 +42,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,23 +61,26 @@ import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.common.AppBackground
 import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-//    viewModel: SettingsViewModel,
     authViewModel: AuthViewModel,
     factory: ViewModelFactory,
 ) {
     val viewModel: SettingsViewModel = viewModel(factory = factory)
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
     // State của SettingsViewModel (Thông báo)
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val notificationInterval by viewModel.notificationInterval.collectAsState()
     var isDropdownExpanded by remember { mutableStateOf(false) }
     val intervalOptions = listOf(2L, 4L, 6L, 8L, 12L)
 
-    // SỬA: Lấy state từ AuthViewModel (SSoT)
+    // Lấy state từ AuthViewModel (SSoT)
     val authUiState by authViewModel.uiState.collectAsState()
     val isLoggedIn = authUiState.isLoggedIn
     val currentUser = authUiState.currentUser
@@ -85,7 +95,10 @@ fun SettingsScreen(
     val profileInitial = displayName.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
 
     AppBackground {
-        Scaffold(containerColor = Color.Transparent) { paddingValues ->
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            containerColor = Color.Transparent
+        ) { paddingValues ->
 
             Column(
                 modifier = Modifier
@@ -95,89 +108,198 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
+
+                // Profile Card
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(if (isLoggedIn) Color(0xFF2196F3) else Color(0xFF94A3B8)),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(20.dp)
                     ) {
-                        val imageUrl = currentUser?.photoUrl
-
-                        if (!imageUrl.isNullOrBlank()) {
-                            // Nếu có ảnh, dùng Coil để tải
-                            AsyncImage(
-                                model = imageUrl,
-                                contentDescription = "Ảnh đại diện",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop // Đảm bảo ảnh lấp đầy hình tròn
-                            )
-                        } else {
-                            // Nếu không có ảnh, hiển thị chữ cái đầu (fallback)
-                            Text(
-                                text = profileInitial,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (isLoggedIn) "Xin chào, $displayName" else "Bạn đang sử dụng tài khoản khách",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF0F172A)
-                        )
-
-                        if (isLoggedIn) {
-                            userEmail?.let {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(text = it, fontSize = 14.sp, color = Color.Gray)
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Button(
-                                onClick = {
-                                    authViewModel.logout()
-                                    // UI sẽ tự cập nhật vì đang observe SSoT
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFE53935),
-                                    contentColor = Color.White
-                                )
+                        // --- 1. HÀNG THÔNG TIN CÁ NHÂN ---
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Avatar
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    // *** BẮT ĐẦU SỬA ĐỔI ***
+                                    // Thêm border tinh tế
+                                    .border(
+                                        width = 2.dp,
+                                        color = if (isLoggedIn) Color(0xFF2196F3) else Color(
+                                            0xFF94A3B8
+                                        ),
+                                        shape = CircleShape
+                                    )
+                                    // *** KẾT THÚC SỬA ĐỔI ***
+                                    .padding(2.dp) // Thêm padding nhỏ bên trong border
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isLoggedIn) Color(0xFF2196F3) else Color(
+                                            0xFF94A3B8
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text("Đăng xuất")
+                                val imageUrl = currentUser?.photoUrl
+
+                                if (!imageUrl.isNullOrBlank()) {
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = "Ảnh đại diện",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Text(
+                                        text = profileInitial,
+                                        fontSize = 26.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
-                        } else { // Chưa đăng nhập
-                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            // Tên và Email
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = if (isLoggedIn) "Xin chào, $displayName" else "Bạn đang sử dụng tài khoản khách",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF0F172A)
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+                                if (isLoggedIn) {
+                                    userEmail?.let {
+                                        Text(text = it, fontSize = 14.sp, color = Color.Gray)
+                                    }
+                                } else {
+                                    Text(
+                                        text = "Đăng nhập để đồng bộ dữ liệu",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                        } // Kết thúc hàng thông tin
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // *** BẮT ĐẦU SỬA ĐỔI ***
+                        // Thêm đường kẻ phân chia
+                        HorizontalDivider(
+                            color = Color.LightGray.copy(alpha = 0.5f),
+                            thickness = 1.dp
+                        )
+                        // *** KẾT THÚC SỬA ĐỔI ***
+
+                        Spacer(modifier = Modifier.height(16.dp)) // Giảm spacer sau divider
+
+                        // --- 2. HÀNG NÚT HÀNH ĐỘNG ---
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp) // Khoảng cách giữa các nút
+                        ) {
+                            // Nút Đăng nhập / Đăng xuất
+                            if (isLoggedIn) {
+                                Button(
+                                    onClick = {
+                                        authViewModel.logout()
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFFBE9E7), // Nền đỏ nhạt
+                                        contentColor = Color(0xFFE53935)  // Chữ đỏ đậm
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        "Đăng xuất",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            } else {
+                                Button(
+                                    onClick = {
+                                        navController.navigate("login?next=home/SETTINGS") {
+                                            launchSingleTop = true
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF2196F3), // Xanh chính
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        "Đăng nhập",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+
+                            // Nút Sao lưu
                             Button(
                                 onClick = {
-                                    // Điều hướng tới login, yêu cầu quay lại tab SETTINGS
-                                    navController.navigate("login?next=home/SETTINGS") {
-                                        launchSingleTop = true
+                                    if (isLoggedIn) {
+                                        navController.navigate("backup")
+                                    } else {
+                                        coroutineScope.launch {
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = "Vui lòng đăng nhập trước khi sao lưu dữ liệu",
+                                                actionLabel = "Đăng nhập",
+                                                duration = SnackbarDuration.Long
+                                            )
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                navController.navigate("login?next=home/SETTINGS")
+                                            }
+                                        }
                                     }
                                 },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF2196F3),
-                                    contentColor = Color.White
-                                )
+                                modifier = Modifier.weight(1f),
+                                colors = if (isLoggedIn) {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFE3F2FD), // Nền xanh nhạt
+                                        contentColor = Color(0xFF2196F3)  // Chữ xanh đậm (sẽ không dùng)
+                                    )
+                                } else {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFECEFF1), // Nền xám
+                                        contentColor = Color.Gray         // Chữ xám
+                                    )
+                                },
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Đăng nhập")
+                                // Dùng Image để giữ màu gốc của drawable
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_cloud),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Sao lưu", fontSize = 15.sp, fontWeight = FontWeight.Medium)
                             }
-                        }
+                        } // Kết thúc hàng nút
                     }
                 }
-                // Kết thúc UI Hồ sơ
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -303,8 +425,9 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .padding(20.dp)
                     ) {
-                        SettingMenuItem(
-                            icon = R.drawable.ic_info,
+                        // Sử dụng hình ảnh thay vì icon
+                        ImageMenuItem(
+                            imageRes = R.drawable.ic_info, // Thay bằng hình ảnh về ứng dụng
                             title = "Về ứng dụng",
                             onClick = { navController.navigate("about") }
                         )
@@ -312,8 +435,8 @@ fun SettingsScreen(
                             modifier = Modifier.padding(vertical = 12.dp),
                             color = Color.LightGray.copy(alpha = 0.5f)
                         )
-                        SettingMenuItem(
-                            icon = R.drawable.ic_help,
+                        ImageMenuItem(
+                            imageRes = R.drawable.ic_help, // Thay bằng hình ảnh trợ giúp
                             title = "Trợ giúp",
                             onClick = { navController.navigate("help") }
                         )
@@ -325,9 +448,47 @@ fun SettingsScreen(
 }
 
 @Composable
+private fun ImageMenuItem(
+    imageRes: Int,
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = imageRes,
+            contentDescription = title,
+            modifier = Modifier.size(32.dp),
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black,
+            modifier = Modifier.weight(1f)
+        )
+        AsyncImage(
+            model = R.drawable.ic_triangle, // Thay bằng hình mũi tên của bạn
+            contentDescription = "Navigate",
+            modifier = Modifier.size(16.dp),
+            contentScale = ContentScale.Fit
+        )
+    }
+}
+
+// Giữ lại SettingMenuItem cũ nếu cần sử dụng ở nơi khác
+@Composable
 private fun SettingMenuItem(
     icon: Int,
     title: String,
+    subtitle: String? = null,
     onClick: () -> Unit
 ) {
     Row(
