@@ -56,7 +56,8 @@ import kotlinx.coroutines.launch
 fun EditTopicScreen(
     navController: NavHostController,
     topicId: String,
-    viewModel: TopicViewModel
+    viewModel: TopicViewModel,
+//    factory: ViewModelFactory
 ) {
     val TOPIC by viewModel.selectedTopic.collectAsState()
 

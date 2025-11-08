@@ -76,13 +76,13 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
 
     // Compose UI
-    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Navigation & ViewModel
     implementation("androidx.navigation:navigation-compose:2.8.3")
@@ -96,6 +96,42 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    // Đã gộp: Thêm từ nhánh 'Kha'
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+    // Firebase (Đã gộp và cập nhật BOM)
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // Google Services (Auth, ML, Ads)
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("com.google.mlkit:translate:17.0.3")
+    implementation("com.google.android.gms:play-services-base")
+//    implementation("com.google.android.gms:play-services-ads:22.3.0") // Quảng cáo
+
+    // Text-to-Speech
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.4")
+
+    // Coil (Đã gộp, lấy phiên bản cao hơn từ code chung)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt:coil-gif:2.5.0")
+
+    // Konfetti (Hiệu ứng)
+    implementation("nl.dionsegijn:konfetti-compose:2.0.4")
+
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // Hilt (Dependency Injection - Từ nhánh 'Kha')
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.48.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     // Debug & Test
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -104,26 +140,4 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    // Coil để load GIF (cho hoạt ảnh động)
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("io.coil-kt:coil-gif:2.5.0")
-
-    // Konfetti để hiệu ứng pháo bông (confetti)
-    implementation("nl.dionsegijn:konfetti-compose:2.0.4")
-    //Room Database - sử dụng KSP thay vì kapt để tránh lỗi SQLite trên Windows
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-
-    //icon
-    implementation("androidx.compose.material:material-icons-extended")
-
-    // Firebase (Auth, Firestore, Analytics)
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
-
-    // Google Sign-In for Firebase
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
 }

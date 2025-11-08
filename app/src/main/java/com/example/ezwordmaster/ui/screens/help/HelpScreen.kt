@@ -48,7 +48,7 @@ fun HelpScreen(
         Scaffold(
             topBar = {
                 CommonTopAppBar(
-                    title = "Help",
+                    title = "Hỗ trợ",
                     canNavigateBack = true,
                     onNavigateUp = { navController.navigate("home/SETTINGS") },
                     onLogoClick = {
@@ -68,7 +68,7 @@ fun HelpScreen(
             ) {
                 // Thêm dòng mô tả giống Figma
                 Text(
-                    text = "Describe anything you need to help!!",
+                    text = "Mô tả bất cứ điều gì bạn cần giúp đỡ!!",
                     fontSize = 16.sp,
                     color = Color.Black.copy(alpha = 0.7f),
                     modifier = Modifier.padding(top = 8.dp)
@@ -85,14 +85,14 @@ fun HelpScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Help Answer",
+                            text = "Trợ giúp Trả lời",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = uiState.selectedItem?.answer
-                                ?: "Please select a question below.",
+                                ?: "Vui lòng chọn một câu hỏi bên dưới",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

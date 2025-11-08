@@ -63,15 +63,13 @@
 //}
 
 
-
-package com.example.ezwordmaster.worker
+package com.example.ezwordmaster.data.worker
 
 import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.RingtoneManager
@@ -98,7 +96,8 @@ class NotificationWorker(
 
     override suspend fun doWork(): Result {
         val randomWordTitle = "📚 It's time to review!"
-        val randomWordContent = "Don't forget to practice your vocabulary today. Tap to continue learning!"
+        val randomWordContent =
+            "Don't forget to practice your vocabulary today. Tap to continue learning!"
 
         showNotification(randomWordTitle, randomWordContent)
         return Result.success()
@@ -157,7 +156,14 @@ class NotificationWorker(
             // Sound & Vibration
             .setDefaults(NotificationCompat.DEFAULT_ALL) // Âm thanh, vibration mặc định
             .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-            .setVibrate(longArrayOf(1000, 1000, 1000, 1000)) // Pattern: wait, vibrate, wait, vibrate
+            .setVibrate(
+                longArrayOf(
+                    1000,
+                    1000,
+                    1000,
+                    1000
+                )
+            ) // Pattern: wait, vibrate, wait, vibrate
 
             // Lights (nếu device hỗ trợ)
             .setLights(Color.BLUE, 1000, 1000) // Màu, on ms, off ms
@@ -176,11 +182,6 @@ class NotificationWorker(
                 R.drawable.ic_snooze,
                 "Remind Later",
                 laterPendingIntent
-            )
-            .addAction(
-                R.drawable.ic_open,
-                "Open App",
-                pendingIntent
             )
 
             // Grouping (nếu có nhiều thông báo)

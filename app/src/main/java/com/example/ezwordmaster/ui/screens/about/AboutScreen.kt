@@ -1,7 +1,13 @@
 package com.example.ezwordmaster.ui.screens.about
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,7 +36,7 @@ fun AboutScreen(navController: NavHostController) {
         Scaffold(
             topBar = {
                 CommonTopAppBar(
-                    title = "About Us",
+                    title = "Về chúng tôi",
                     canNavigateBack = true,
                     onNavigateUp = { navController.navigate("home/SETTINGS") },
                     onLogoClick = {
@@ -66,7 +72,17 @@ fun AboutScreen(navController: NavHostController) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Version 1.0.0\n\nDeveloped by HKT2\n\nThis app is designed to help you learn new English words effectively through various methods like flashcards, quizzes, and daily notifications.\n\nThank you for using our application!",
+                        text = "Phiên bản 2.0.0\n" +
+                                "Phát triển bởi HKT2Ez\n\n" +
+                                "WordMaster là người bạn đồng hành lý tưởng trên hành trình chinh " +
+                                "phục từ vựng tiếng Anh của bạn. Ứng dụng được thiết kế để giúp " +
+                                "bạn học từ mới một cách hiệu quả và thú vị thông qua các phương " +
+                                "pháp đa dạng như flashcard trực quan, các bài trắc nghiệm " +
+                                "(quizzes) đầy thử thách, và tính năng nhắc nhở học tập hàng " +
+                                "ngày.Mục tiêu của chúng tôi là mang đến một công cụ học tập " +
+                                "linh hoạt, cá nhân hóa, giúp bạn xây dựng vốn từ vựng vững " +
+                                "chắc mọi lúc, mọi nơi.\n\n Cảm ơn bạn đã tin tưởng và sử dụng ứng " +
+                                "dụng của chúng tôi!",
                         fontSize = 16.sp,
                         color = Color.DarkGray,
                         textAlign = TextAlign.Center,

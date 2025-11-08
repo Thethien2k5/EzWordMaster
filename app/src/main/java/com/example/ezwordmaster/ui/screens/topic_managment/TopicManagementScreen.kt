@@ -57,13 +57,23 @@ import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.FilterSortType
 import com.example.ezwordmaster.model.Topic
+import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.common.AppBackground
 import com.example.ezwordmaster.ui.common.Menu
+import com.example.ezwordmaster.ui.common.TranslationFloatingButton
+import com.example.ezwordmaster.ui.common.TranslationHelper
+import com.example.ezwordmaster.ui.common.TranslationPopup
+import com.example.ezwordmaster.ui.common.hide
+import com.example.ezwordmaster.ui.common.rememberTranslationPopupState
+import com.example.ezwordmaster.ui.common.show
 import kotlinx.coroutines.launch
 
-
 @Composable
-fun TopicManagementScreen(navController: NavHostController, viewModel: TopicViewModel) {
+fun TopicManagementScreen(
+    navController: NavHostController,
+    viewModel: TopicViewModel,
+    factory: ViewModelFactory
+) {
     val TOPICS by viewModel.topics.collectAsState()
     val TOASTMESSAGE by viewModel.toastMessage.collectAsState()
     val COROUTINESCOPE = rememberCoroutineScope()
@@ -73,6 +83,9 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
     var showAddTopicDialog by remember { mutableStateOf(false) }
     var showDropdown by remember { mutableStateOf(false) }
     var filterSortType by remember { mutableStateOf(FilterSortType.ALL) }
+    // ===== THÊM PHẦN DỊCH THUẬT =====
+    val translationPopupState = rememberTranslationPopupState()
+    val translationViewModel = TranslationHelper.rememberTranslationViewModel(factory)
 
 
     // Lọc và sắp xếp chủ đề
@@ -110,7 +123,13 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
     AppBackground {
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = SNACKBARHOSTSTATE) },
-            containerColor = Color.Transparent
+            containerColor = Color.Transparent,
+            // ===== NÚT DỊCH FLOATING =====
+            floatingActionButton = { // THÊM TÊN PARAMETER
+                TranslationFloatingButton(
+                    onClick = { translationPopupState.show() }
+                )
+            }
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -258,6 +277,11 @@ fun TopicManagementScreen(navController: NavHostController, viewModel: TopicView
             }
         )
     }
+    TranslationPopup(
+        isVisible = translationPopupState.value,
+        onDismiss = { translationPopupState.hide() },
+        viewModel = translationViewModel
+    )
 }
 
 // Hiển thị động các chủ đề

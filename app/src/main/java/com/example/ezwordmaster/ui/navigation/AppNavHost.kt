@@ -31,7 +31,6 @@ import com.example.ezwordmaster.ui.screens.regime.practice.flash.FlashcardScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.EssayQuizScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.MultiChoiceQuizScreen
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.TrueFalseQuizScreen
-import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.EditTopicScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
@@ -96,23 +95,32 @@ fun AppNavHost(
             MainHomeScreen(
                 navController = navController,
                 // Truyền các SSoT xuống MainHomeScreen
+                factory = factory,
                 authViewModel = AUTHVIEWMODEL,
                 topicViewModel = TOPICVIEWMODEL,
                 practiceViewModel = viewModel<PracticeViewModel>(factory = factory),
-                settingsViewModel = viewModel<SettingsViewModel>(factory = factory),
+//                settingsViewModel = viewModel<SettingsViewModel>(factory = factory),
                 initialTab = initialTab
             )
         }
         composable("about") { AboutScreen(navController = navController) }
         composable("help") { HelpScreen(navController = navController) }
-        composable("notificationscreen") { NotificationScreen(navController = navController) }
+        composable("notificationscreen/{text}") { backStackEntry ->
+            val text = backStackEntry.arguments?.getString("text") ?: ""
+            NotificationScreen(
+                navController = navController,
+                viewModel = viewModel(factory = factory),
+                text = text
+            )
+        }
 
         //*** ======= QUẢN LÝ CHỦ ĐỀ ======= ***///
         //danh sách chủ đề
         composable("topicmanagementscreen") {
             TopicManagementScreen(
                 navController = navController,
-                TOPICVIEWMODEL
+                viewModel = TOPICVIEWMODEL,
+                factory = factory
             )
         }
         // chỉnh sửa chủ đề cụ để
@@ -121,7 +129,8 @@ fun AppNavHost(
             EditTopicScreen(
                 navController = navController,
                 topicId = topicId,
-                TOPICVIEWMODEL
+                viewModel = TOPICVIEWMODEL,
+//                factory = factory
             )
         }
 

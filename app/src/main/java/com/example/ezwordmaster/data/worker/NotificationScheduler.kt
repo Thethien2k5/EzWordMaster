@@ -6,6 +6,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.ezwordmaster.data.worker.NotificationWorker
 import java.util.concurrent.TimeUnit
 
 object NotificationScheduler {

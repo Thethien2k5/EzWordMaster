@@ -47,9 +47,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.ezwordmaster.R
+import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.common.AppBackground
 import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
 
@@ -57,9 +59,11 @@ import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    viewModel: SettingsViewModel,
-    authViewModel: AuthViewModel
+//    viewModel: SettingsViewModel,
+    authViewModel: AuthViewModel,
+    factory: ViewModelFactory,
 ) {
+    val viewModel: SettingsViewModel = viewModel(factory = factory)
     // State của SettingsViewModel (Thông báo)
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val notificationInterval by viewModel.notificationInterval.collectAsState()

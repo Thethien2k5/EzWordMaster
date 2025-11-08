@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
 import com.example.ezwordmaster.ui.screens.history.HistoryViewModel
+import com.example.ezwordmaster.ui.screens.notification.NotificationViewModel
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.regime.ResultViewModel
 import com.example.ezwordmaster.ui.screens.regime.entertainment.FlipCardViewModel
@@ -11,6 +12,7 @@ import com.example.ezwordmaster.ui.screens.regime.practice.flash.FlashcardViewMo
 import com.example.ezwordmaster.ui.screens.regime.practice.quiz.QuizViewModel
 import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
+import com.example.ezwordmaster.ui.screens.translationScreen.TranslationViewModel
 
 /**
  * Factory này nhận vào cả AppContainer.
@@ -53,7 +55,10 @@ class ViewModelFactory(
             }
 
             modelClass.isAssignableFrom(QuizViewModel::class.java) -> {
-                QuizViewModel(CONTAINER.topicRepository, CONTAINER.studyResultRepository) as T
+                QuizViewModel(
+                    CONTAINER.topicRepository,
+                    CONTAINER.studyResultRepository
+                ) as T
             }
 
             modelClass.isAssignableFrom(AuthViewModel::class.java) -> {
@@ -62,6 +67,14 @@ class ViewModelFactory(
                     CONTAINER.authRepository,
                     CONTAINER.userRepository
                 ) as T
+            }
+
+            modelClass.isAssignableFrom(NotificationViewModel::class.java) -> {
+                NotificationViewModel(CONTAINER.notificationRepository) as T
+            }
+
+            modelClass.isAssignableFrom(TranslationViewModel::class.java) -> {
+                TranslationViewModel(CONTAINER.translationRepository) as T
             }
             // Thêm các ViewModel khác ở đây...
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

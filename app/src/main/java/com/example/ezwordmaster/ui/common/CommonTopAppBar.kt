@@ -22,9 +22,10 @@ import com.example.ezwordmaster.R
 @Composable
 fun CommonTopAppBar(
     title: String,
-    canNavigateBack: Boolean,
-    onNavigateUp: () -> Unit,
-    onLogoClick: () -> Unit
+    canNavigateBack: Boolean = true,
+    onNavigateUp: () -> Unit = {},
+    onLogoClick: () -> Unit = {},
+    actions: @Composable () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -50,6 +51,7 @@ fun CommonTopAppBar(
             }
         },
         actions = {
+            actions()
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Go to Home",

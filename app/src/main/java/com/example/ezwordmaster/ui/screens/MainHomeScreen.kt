@@ -43,20 +43,21 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.model.MainTab
+import com.example.ezwordmaster.ui.ViewModelFactory
 import com.example.ezwordmaster.ui.screens.auth.AuthViewModel
 import com.example.ezwordmaster.ui.screens.regime.PracticeScreen
 import com.example.ezwordmaster.ui.screens.regime.PracticeViewModel
 import com.example.ezwordmaster.ui.screens.settings.SettingsScreen
-import com.example.ezwordmaster.ui.screens.settings.SettingsViewModel
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicManagementScreen
 import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
 
 @Composable
 fun MainHomeScreen(
     navController: NavHostController,
+    factory: ViewModelFactory,
     topicViewModel: TopicViewModel,
     practiceViewModel: PracticeViewModel,
-    settingsViewModel: SettingsViewModel,
+//    settingsViewModel: SettingsViewModel,
     authViewModel: AuthViewModel,
     initialTab: MainTab = MainTab.MANAGEMENT
 
@@ -68,6 +69,7 @@ fun MainHomeScreen(
         MainTab.PRACTICE -> "Ôn tập"
         MainTab.SETTINGS -> "Cài đặt"
     }
+
 
     Box(
         modifier = Modifier
@@ -83,7 +85,7 @@ fun MainHomeScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Top Bar với icons
-            TopBarWithIcons(navController = navController, title = title)
+            TopBarWithIcons(navController = navController, title = title, selectedTab = selectedTab)
             // Content area với animation
             Box(
                 modifier = Modifier
@@ -121,7 +123,8 @@ fun MainHomeScreen(
                         MainTab.MANAGEMENT -> {
                             TopicManagementScreen(
                                 navController = navController,
-                                viewModel = topicViewModel
+                                viewModel = topicViewModel,
+                                factory = factory,
                             )
                         }
 
@@ -136,7 +139,7 @@ fun MainHomeScreen(
                             SettingsScreen(
                                 navController = navController,
                                 authViewModel = authViewModel,
-                                viewModel = settingsViewModel
+                                factory = factory
                             )
                         }
                     }
@@ -153,7 +156,7 @@ fun MainHomeScreen(
 }
 
 @Composable
-fun TopBarWithIcons(navController: NavHostController, title: String) {
+fun TopBarWithIcons(navController: NavHostController, title: String, selectedTab: MainTab) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -176,7 +179,7 @@ fun TopBarWithIcons(navController: NavHostController, title: String) {
             modifier = Modifier
                 .align(Alignment.CenterEnd) // Đặt icon ở cuối Box
                 .size(28.dp)
-                .clickable { navController.navigate("notificationscreen") }
+                .clickable { navController.navigate("notificationscreen/$selectedTab") }
         )
     }
 }
