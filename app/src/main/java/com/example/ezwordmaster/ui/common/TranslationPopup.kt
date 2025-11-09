@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
 import com.example.ezwordmaster.ui.screens.translationScreen.TranslationScreen
 import com.example.ezwordmaster.ui.screens.translationScreen.TranslationViewModel
 
@@ -48,7 +49,8 @@ import com.example.ezwordmaster.ui.screens.translationScreen.TranslationViewMode
 fun TranslationPopup(
     isVisible: Boolean,
     onDismiss: () -> Unit,
-    viewModel: TranslationViewModel
+    viewModel: TranslationViewModel,
+    topicViewModel: TopicViewModel // THÊM parameter
 ) {
     // Hiệu ứng scale và fade khi xuất hiện
     AnimatedVisibility(
@@ -102,7 +104,8 @@ fun TranslationPopup(
                         // Nội dung màn hình dịch
                         TranslationScreen(
                             onBackClick = onDismiss,
-                            viewModel = viewModel
+                            viewModel = viewModel,
+                            topicViewModel = topicViewModel
                         )
 
 //                        // Nút đóng (X) ở góc trên phải

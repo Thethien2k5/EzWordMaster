@@ -89,7 +89,7 @@ class TopicViewModel(
                 return@launch
             }
             TOPICREPOSITORY.addWordToTopic(topicId, word)
-            loadTopicById(topicId)
+            loadAllTopics()
             _TOASTMESSAGE.value = "Đã thêm từ '${word.word}'."
         }
     }

@@ -1,6 +1,7 @@
 package com.example.ezwordmaster.ui.screens.translationScreen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,25 +10,33 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,21 +52,33 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.ezwordmaster.model.Topic
+import com.example.ezwordmaster.model.Word
 import com.example.ezwordmaster.ui.common.CommonTopAppBar
+import com.example.ezwordmaster.ui.screens.topic_managment.TopicViewModel
 
 @Composable
 fun TranslationScreen(
     onBackClick: () -> Unit,
-    viewModel: TranslationViewModel
+    viewModel: TranslationViewModel,
+    topicViewModel: TopicViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var inputText by remember { mutableStateOf("") }
+    val topics by topicViewModel.topics.collectAsState()
 
-    // Đồng bộ inputText từ ViewModel sang UI
+    var inputText by remember { mutableStateOf("") }
+    var showSaveDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(uiState.inputText) {
         if (inputText != uiState.inputText) {
             inputText = uiState.inputText
         }
+    }
+
+    // Load topics khi màn hình khởi tạo
+    LaunchedEffect(Unit) {
+        topicViewModel.loadAllTopics()
     }
 
     val displayResult = remember { mutableStateOf(uiState.currentTranslation) }
@@ -66,11 +87,10 @@ fun TranslationScreen(
     LaunchedEffect(uiState.currentTranslation) {
         if (uiState.currentTranslation != null && uiState.currentTranslation?.error == null) {
             displayResult.value = uiState.currentTranslation
-            displayedWord = uiState.inputText // Lưu lại từ đã tra
+            displayedWord = uiState.inputText
         }
     }
 
-    // Lấy tên ngôn ngữ từ state
     val sourceLangText = if (uiState.sourceLang == "en") "Anh" else "Việt"
     val targetLangText = if (uiState.targetLang == "vi") "Việt" else "Anh"
 
@@ -139,7 +159,7 @@ fun TranslationScreen(
                             value = inputText,
                             onValueChange = {
                                 inputText = it
-                                viewModel.setInputText(it) // Cập nhật state trong VM
+                                viewModel.setInputText(it)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -189,7 +209,6 @@ fun TranslationScreen(
                     Button(
                         onClick = {
                             if (inputText.isNotBlank()) {
-                                // Gọi hàm không cần tham số
                                 viewModel.translateText()
                             }
                         },
@@ -263,13 +282,13 @@ fun TranslationScreen(
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // Word & Phonetic Card
+                                // Word & Phonetic Card với nút Save
                                 item {
-                                    WordInfoCard(
-                                        // ############ SỬA 3: Dùng từ đã lưu ############
+                                    WordInfoCardWithSave(
                                         word = displayedWord,
                                         phonetic = translation.phonetic,
-                                        partOfSpeech = translation.partOfSpeech
+                                        partOfSpeech = translation.partOfSpeech,
+                                        onSaveClick = { showSaveDialog = true }
                                     )
                                 }
 
@@ -336,7 +355,6 @@ fun TranslationScreen(
                     }
 
                     uiState.error != null -> {
-                        // Error State
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -363,7 +381,6 @@ fun TranslationScreen(
                     }
 
                     else -> {
-                        // Empty State
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -398,11 +415,36 @@ fun TranslationScreen(
                 }
             }
         }
+
+        // Dialog chọn chủ đề để lưu từ
+        if (showSaveDialog && displayResult.value != null) {
+            SaveWordDialog(
+                word = displayedWord,
+                meaning = displayResult.value!!.translatedText,
+                topics = topics,
+                onDismiss = { showSaveDialog = false },
+                onSave = { selectedTopic ->
+                    val newWord = Word(
+                        word = displayedWord,
+                        meaning = displayResult.value!!.translatedText,
+                        example = displayResult.value!!.example
+                    )
+                    topicViewModel.addWordToTopic(selectedTopic.id ?: "", newWord)
+                    showSaveDialog = false
+                }
+            )
+        }
     }
 }
 
+// ========== NEW COMPONENT: WordInfoCardWithSave ==========
 @Composable
-fun WordInfoCard(word: String, phonetic: String, partOfSpeech: String) {
+fun WordInfoCardWithSave(
+    word: String,
+    phonetic: String,
+    partOfSpeech: String,
+    onSaveClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -411,54 +453,210 @@ fun WordInfoCard(word: String, phonetic: String, partOfSpeech: String) {
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            // TỪ CHÍNH
-            Text(
-                text = word,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                // Từ chính
+                Text(
+                    text = word,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
 
-            // THÔNG TIN PHỤ
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                // Thông tin phụ
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (phonetic.isNotEmpty()) {
+                        Column {
+                            Text(
+                                text = "Phiên âm",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = "/$phonetic/",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+
+                    if (partOfSpeech.isNotEmpty()) {
+                        Column {
+                            Text(
+                                text = "Từ loại",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = partOfSpeech,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Nút Save ở góc phải
+            FloatingActionButton(
+                onClick = onSaveClick,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .offset(y = (-12.dp))
+                    .size(56.dp),
+                containerColor = Color(0xFFB8C1EC),
+                contentColor = Color.White
             ) {
-                if (phonetic.isNotEmpty()) {
-                    Column {
-                        Text(
-                            text = "Phiên âm",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = "/$phonetic/",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-
-                if (partOfSpeech.isNotEmpty()) {
-                    Column {
-                        Text(
-                            text = "Từ loại",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = partOfSpeech,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Lưu từ vựng",
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
 }
 
+// ========== NEW COMPONENT: SaveWordDialog ==========
+@Composable
+fun SaveWordDialog(
+    word: String,
+    meaning: String,
+    topics: List<Topic>,
+    onDismiss: () -> Unit,
+    onSave: (Topic) -> Unit
+) {
+    var selectedTopic by remember { mutableStateOf<Topic?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFFF5F5F5),
+        title = {
+            Column {
+                Text(
+                    "Lưu từ vựng",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "'$word' → '$meaning'",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        },
+        text = {
+            Column {
+                Text(
+                    "Chọn chủ đề để lưu:",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (topics.isEmpty()) {
+                    Text(
+                        "Chưa có chủ đề nào. Vui lòng tạo chủ đề trước.",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 300.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(topics) { topic ->
+                            TopicSelectionItem(
+                                topic = topic,
+                                isSelected = selectedTopic?.id == topic.id,
+                                onClick = { selectedTopic = topic }
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    selectedTopic?.let { onSave(it) }
+                },
+                enabled = selectedTopic != null,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                )
+            ) {
+                Text("Lưu")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Hủy", color = Color.Gray)
+            }
+        }
+    )
+}
+
+@Composable
+fun TopicSelectionItem(
+    topic: Topic,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color(0xFFE3F2FD) else Color.White
+        ),
+        border = if (isSelected) androidx.compose.foundation.BorderStroke(
+            2.dp,
+            Color(0xFF2196F3)
+        ) else null
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = topic.name ?: "Không có tên",
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "${topic.words.size} từ",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
+
+// ========== EXISTING COMPONENTS (unchanged) ==========
 @Composable
 fun DefinitionCard(definition: String, englishDefinition: String, example: String) {
     Card(
@@ -470,7 +668,6 @@ fun DefinitionCard(definition: String, englishDefinition: String, example: Strin
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // TIÊU ĐỀ TIẾNG VIỆT
             Text(
                 text = "Nghĩa tiếng Việt",
                 style = MaterialTheme.typography.titleLarge,
@@ -480,7 +677,6 @@ fun DefinitionCard(definition: String, englishDefinition: String, example: Strin
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ĐỊNH NGHĨA TIẾNG VIỆT (NỔI BẬT)
             Text(
                 text = definition,
                 style = MaterialTheme.typography.bodyLarge,
@@ -489,7 +685,6 @@ fun DefinitionCard(definition: String, englishDefinition: String, example: Strin
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // VẠCH NGĂN CÁCH
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -499,7 +694,6 @@ fun DefinitionCard(definition: String, englishDefinition: String, example: Strin
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ĐỊNH NGHĨA TIẾNG ANH (PHỤ)
             Text(
                 text = "English definition",
                 style = MaterialTheme.typography.titleMedium,
@@ -516,7 +710,6 @@ fun DefinitionCard(definition: String, englishDefinition: String, example: Strin
                 fontStyle = FontStyle.Italic
             )
 
-            // VÍ DỤ
             if (example.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Box(

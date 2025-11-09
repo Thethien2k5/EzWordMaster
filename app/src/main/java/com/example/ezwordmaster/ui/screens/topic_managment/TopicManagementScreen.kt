@@ -277,10 +277,12 @@ fun TopicManagementScreen(
             }
         )
     }
+    // ===== POPUP DỊCH =====
     TranslationPopup(
         isVisible = translationPopupState.value,
         onDismiss = { translationPopupState.hide() },
-        viewModel = translationViewModel
+        viewModel = translationViewModel,
+        topicViewModel = viewModel
     )
 }
 

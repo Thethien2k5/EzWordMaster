@@ -1,123 +1,305 @@
 # EzWordMaster
+
 ![EzWordMaster Logo](app/src/main/res/drawable/logo.png)
 
-Ứng dụng học từ vựng trên thiết bị di động cho phép bạn tạo và quản lý chủ đề (thư mục) từ vựng, thêm từ mới kèm nghĩa/ví dụ, và ôn tập bằng nhiều chế độ trực quan (flashcard, lật thẻ, quiz). Ứng dụng cũng ghi lại lịch sử học tập để theo dõi tiến độ.
+[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.9.23-blue?logo=kotlin)](https://kotlinlang.org)
+[![JDK Version](https://img.shields.io/badge/JDK-17-purple?logo=openjdk)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+[![Build System](https://img.shields.io/badge/Gradle-8.x-yellow?logo=gradle)](https://gradle.org)
+[![Architecture](<https://img.shields.io/badge/Architecture-Clean%20(UI%2C%20Domain%2C%20Data)-orange>)](https://developer.android.com/topic/architecture)
+[![UI Framework](https://img.shields.io/badge/UI-Jetpack_Compose-green?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
+[![Database](https://img.shields.io/badge/Database-Room%20&%20Firestore-red?logo=firebase)](https://firebase.google.com)
 
-## Tính năng chính
-- **Quản lý chủ đề**
-    - Tạo, xem danh sách, chỉnh sửa, xóa chủ đề
-    - Quản lý từ vựng trong từng chủ đề (thêm, sửa, xóa)
-- **Ôn tập**
-    - **Flashcard**: đánh dấu từ đã biết/đang học, xem kết quả tổng hợp
-    - **Lật thẻ**: chọn tập từ, chơi lật thẻ ghép từ-nghĩa, xem kết quả ghép đúng
-    - **Quiz**: True/False, Essay, Multiple Choice; có màn hình thiết lập trước khi làm
-- **Lịch sử học tập**
-    - Xem lại điểm/tiến độ theo thời gian
-    - Theo dõi kết quả theo từng chế độ học (flashcard, quiz, flip card)
-- **Cài đặt**
-    - Bật/tắt nhắc nhở học tập; chọn chu kỳ nhắc (giờ)
-- **Màn hình hỗ trợ**
-    - Màn hình giới thiệu (Intro)
-    - Màn hình trợ giúp (Help)
-    - Màn hình thông tin (About)
-    - Màn hình thông báo (Notification)
+**EzWordMaster** là một ứng dụng học từ vựng di động toàn diện, được xây dựng với kiến trúc "offline-first" kết hợp đồng bộ hóa đám mây. Ứng dụng cho phép người dùng quản lý từ vựng theo chủ đề, ôn tập qua nhiều phương pháp, và theo dõi tiến độ.
 
-**Lưu ý**: Nhắc nhở/Thông báo phụ thuộc quyền POST_NOTIFICATIONS (Android 13+) và lập lịch qua WorkManager. Một số thiết bị/thiết lập tiết kiệm pin có thể trì hoãn job nền.
+Nhờ tích hợp Firebase, ứng dụng hỗ trợ **xác thực người dùng**, **đồng bộ hóa dữ liệu** (chủ đề, từ vựng) lên đám mây, và nhận **thông báo đẩy (push notifications)**.
 
-## Kiến trúc & Công nghệ
-- **UI Framework**: Kotlin, Jetpack Compose (Material 3), Navigation Compose
-- **Architecture**: MVVM (ViewModel) với Repository Pattern
-- **Data Storage**:
-    - Room Database (SQLite) - lưu trữ topics, words, study results
-    - DataStore Preferences - lưu cài đặt thông báo
-    - Tự động migrate từ JSON sang Room Database khi khởi động lần đầu
-- **Concurrency**: Kotlin Coroutines, Flow
-- **Serialization**: kotlinx-serialization (JSON) - hỗ trợ migrate dữ liệu
-- **Background Work**: WorkManager (lập lịch nhắc nhở định kỳ)
-- **Image Loading**: Coil (hỗ trợ GIF)
-- **UI Effects**: Konfetti Compose (hiệu ứng pháo bông)
-- **Network**: Retrofit + Gson converter (đã khai báo, sẵn sàng tích hợp API dịch từ vựng)
-- **Database Tool**: KSP (Kotlin Symbol Processing) thay vì KAPT
-- **Cấu hình Android**: compileSdk 34, targetSdk 34, minSdk 24, JDK 17
+---
 
-## Cấu trúc thư mục (rút gọn)
-- `app/src/main/java/com/example/ezwordmaster/`
-    - `MainActivity.kt`: Entry point, xin quyền notification, khởi tạo `AppContainer` và `ViewModelFactory`
-    - `utils/NotificationSettings.kt`: Application class tạo `NotificationChannel`
-    - `ui/AppContainer.kt`: Dependency injection container, cung cấp repository cho ViewModel
-    - `ui/ViewModelFactory.kt`: Factory khởi tạo ViewModel theo repository từ AppContainer
-    - `ui/navigation/AppNavHost.kt`: Định nghĩa các tuyến màn hình (start destination: `home/MANAGEMENT` với tab mặc định là Quản lý)
-    - `ui/screens/`: Các màn hình UI
-        - `MainHomeScreen.kt`: Màn hình chính với 3 tab (Quản lý, Ôn tập, Cài đặt)
-        - `IntroScreen.kt`: Màn hình giới thiệu
-        - `about/AboutScreen.kt`: Màn hình thông tin về app
-        - `help/HelpScreen.kt`: Màn hình trợ giúp
-        - `notification/NotificationScreen.kt`: Màn hình quản lý thông báo
-        - `topic_managment/`: Quản lý chủ đề (danh sách, chỉnh sửa)
-        - `regime/`: Các màn hình ôn tập
-            - `practice/flash/`: Flashcard
-            - `practice/quiz/`: Quiz (True/False, Essay, Multiple Choice)
-            - `entertainment/`: Lật thẻ (Flip Card)
-        - `history/StudyHistoryScreen.kt`: Lịch sử học tập
-        - `settings/SettingsScreen.kt`: Cài đặt
-    - `data/`: Layer xử lý dữ liệu
-        - `local/database/`: Room Database (EzWordMasterDatabase)
-        - `local/dao/`: DAO interfaces (TopicDao, WordDao, StudyResultDao)
-        - `local/entity/`: Room entities (TopicEntity, WordEntity, StudyResultEntity)
-        - `local/mapper/`: Mapper chuyển đổi Entity ↔ Domain Model
-        - `local/repository/`: Repository implementations (TopicRepositoryImpl, StudyResultRepositoryImpl, SettingsRepositoryImpl)
-        - `local/SettingsDataStore.kt`: DataStore lưu cài đặt thông báo
-        - `remote/DictionaryApi.kt`: Retrofit interface (sẵn sàng tích hợp API)
-        - `worker/`: NotificationWorker, NotificationScheduler
-    - `domain/repository/`: Repository interfaces (ITopicRepository, IStudyResultRepository, ISettingsRepository)
-    - `model/`: Domain models và UI models (Topic, Word, StudyResult, etc.)
-- `app/src/main/res/`: Tài nguyên giao diện (drawable, layout, values, xml, raw)
-- `app/src/main/AndroidManifest.xml`: Quyền, `application`, `activity`
-- `app/build.gradle.kts`: Cấu hình module
-- `build.gradle.kts`, `settings.gradle.kts`, `gradle.properties`: Cấu hình dự án
+## 🔍 Thông tin thêm
 
-## Yêu cầu
-- Android Studio (phiên bản mới, hỗ trợ Kotlin 1.9.23+)
-- JDK 17
-- Android SDK 34 (minSdk 24)
+- [Báo cáo](#)
+- [Design](https://www.figma.com/design/A6rw39IXQP0aWaGc4lGeKg/EzWordMaster?node-id=384-453&t=wp5tAfkBSJnFsPdv-1)
 
-## Cách chạy
-1. Mở dự án bằng Android Studio và đồng bộ Gradle.
-2. Chọn module `app`, chọn thiết bị (emulator/physical).
-3. Run project (nút Run trên toolbar).
+---
 
-### Build APK nhanh (tùy chọn)
-- Windows PowerShell tại thư mục gốc dự án:
+## 🏛️ Sơ đồ Kiến trúc (Architecture)
+
+Dự án tuân thủ theo mô hình **Clean Architecture** (UI, Domain, Data) kết hợp với **MVVM** và **Repository Pattern**. Kiến trúc này đảm bảo sự tách biệt rõ ràng giữa các lớp, giúp code dễ bảo trì, mở rộng và kiểm thử.
+
+- **UI Layer (Lớp Giao diện)**: Sử dụng Jetpack Compose và ViewModel. Chịu trách nhiệm hiển thị dữ liệu và xử lý tương tác người dùng.
+- **Domain Layer (Lớp Nghiệp vụ)**: Chứa các logic nghiệp vụ cốt lõi và các `Repository Interfaces` (ví dụ: `ITopicRepository`, `IAuthRepository`). Lớp này không phụ thuộc vào `data` hay `ui`.
+- **Data Layer (Lớp Dữ liệu)**: Chịu trách nhiệm triển khai (implementation) các repository. Nó quyết định nơi lấy dữ liệu:
+  - **Local**: Room Database, DataStore Preferences.
+  - **Cloud**: Firebase Firestore (đồng bộ từ vựng).
+  - **Remote**: Retrofit API (dịch thuật).
+  - **FCM**: Firebase Cloud Messaging (nhận thông báo).
+
+---
+
+## 🗂️ Cấu trúc cây thư mục
+
+```
+├── 🗃️ data
+│   ├── 📁 cloud
+│   │   ├── ☕ CloudStudyResultRepository.kt
+│   │   └── ☕ CloudTopicRepository.kt
+│   ├── 📁 di
+│   │   └── ☕ NetworkModule.kt
+│   ├── 📁 fcm
+│   │   └── ☕ MyFirebaseMessagingService.kt
+│   ├── 🗂️ local
+│   │   ├── 📁 converters
+│   │   │   ├── ☕ DateConverter.kt
+│   │   │   └── ☕ StringListConverter.kt
+│   │   ├── 📁 dao
+│   │   │   ├── ☕ NotificationDao.kt
+│   │   │   ├── ☕ StudyResultDao.kt
+│   │   │   ├── ☕ TopicDao.kt
+│   │   │   ├── ☕ TranslationHistoryDao.kt
+│   │   │   └── ☕ WordDao.kt
+│   │   ├── 📁 database
+│   │   │   └── ☕ EzWordMasterDatabase.kt
+│   │   ├── 📁 entity
+│   │   │   ├── ☕ NotificationEntity.kt
+│   │   │   ├── ☕ StudyResultEntity.kt
+│   │   │   ├── ☕ TopicEntity.kt
+│   │   │   ├── ☕ TranslationHistoryEntity.kt
+│   │   │   └── ☕ WordEntity.kt
+│   │   ├── 📁 mapper
+│   │   │   ├── ☕ StudyResultMapper.kt
+│   │   │   └── ☕ TopicMapper.kt
+│   │   └── ☕ SettingsDataStore.kt
+│   ├── 📁 remote
+│   │   └── ☕ DictionaryApi.kt
+│   ├── 📁 repository
+│   │   ├── ☕ AuthRepositoryImpl.kt
+│   │   ├── ☕ NotificationRepositoryImpl.kt
+│   │   ├── ☕ SettingsRepositoryImpl.kt
+│   │   ├── ☕ StudyResultRepositoryImpl.kt
+│   │   ├── ☕ TopicRepositoryImpl.kt
+│   │   ├── ☕ TranslationRepositoryImpl.kt
+│   │   └── ☕ UserRepositoryImpl.kt
+│   └── 📁 worker
+│       ├── ☕ NotificationScheduler.kt
+│       └── ☕ NotificationWorker.kt
+├── 🗃️ domain
+│   └── 📁 repository
+│       ├── ☕ IAuthRepository.kt
+│       ├── ☕ ICloudStudyResultRepository.kt
+│       ├── ☕ ICloudTopicRepository.kt
+│       ├── ☕ INotificationRepository.kt
+│       ├── ☕ ISettingsRepository.kt
+│       ├── ☕ IStudyResultRepository.kt
+│       ├── ☕ ITopicRepository.kt
+│       ├── ☕ ITranslationRepository.kt
+│       └── ☕ IUserRepository.kt
+├── 📁 model
+│   ├── ☕ ApiDtoModels.kt
+│   ├── ☕ Backup.kt
+│   ├── ☕ PracticeUiStateModels.kt
+│   ├── ☕ QuizModels.kt
+│   ├── ☕ StudyModels.kt
+│   ├── ☕ Topic.kt
+│   ├── ☕ Translate.kt
+│   ├── ☕ TranslationApiModels.kt
+│   ├── ☕ UiSpecificModels.kt
+│   └── ☕ UserData.kt
+├── 🗃️ ui
+│   ├── 📁 common
+│   │   ├── ☕ AppBackground.kt
+│   │   ├── ☕ AuthLayout.kt
+│   │   ├── ☕ CommonTopAppBar.kt
+│   │   ├── ☕ GradientBackground.kt
+│   │   ├── ☕ HeaderBar.kt
+│   │   ├── ☕ LoginRedirect.kt
+│   │   ├── ☕ QuizComponents.kt
+│   │   ├── ☕ SortDropdownMenu.kt
+│   │   ├── ☕ TranslationHelper.kt
+│   │   └── ☕ TranslationPopup.kt
+│   ├── 📁 navigation
+│   │   └── ☕ AppNavHost.kt
+│   ├── 🗂️ screens
+│   │   ├── 📁 about
+│   │   │   └── ☕ AboutScreen.kt
+│   │   ├── 📁 auth
+│   │   │   ├── ☕ AuthViewModel.kt
+│   │   │   ├── ☕ ForgotPasswordSreen.kt
+│   │   │   ├── ☕ LoginSreen.kt
+│   │   │   └── ☕ RegisterScreen.kt
+│   │   ├── 📁 backup
+│   │   │   ├── ☕ BackupScreen.kt
+│   │   │   └── ☕ BackupViewModel.kt
+│   │   ├── 📁 help
+│   │   │   ├── ☕ HelpScreen.kt
+│   │   │   └── ☕ HelpViewModel.kt
+│   │   ├── 📁 history
+│   │   │   ├── ☕ HistoryViewModel.kt
+│   │   │   └── ☕ StudyHistoryScreen.kt
+│   │   ├── 📁 notification
+│   │   │   ├── ☕ NotificationScreen.kt
+│   │   │   └── ☕ NotificationViewModel.kt
+│   │   ├── 🗂️ regime
+│   │   │   ├── 📁 entertainment
+│   │   │   │   ├── ☕ FlipCardScreen.kt
+│   │   │   │   ├── ☕ FlipCardViewModel.kt
+│   │   │   │   └── ☕ FlipResultScreen.kt
+│   │   │   ├── 🗂️ practice
+│   │   │   │   ├── 📁 flash
+│   │   │   │   │   ├── ☕ FlashcardScreen.kt
+│   │   │   │   │   └── ☕ FlashcardViewModel.kt
+│   │   │   │   └── 📁 quiz
+│   │   │   │       ├── ☕ EssayQuizScreen.kt
+│   │   │   │       ├── ☕ MultiChoiceQuizScreen.kt
+│   │   │   │       ├── ☕ QuizViewModel.kt
+│   │   │   │       └── ☕ TrueFalseQuizScreen.kt
+│   │   │   ├── ☕ PracticeScreen.kt
+│   │   │   ├── ☕ PracticeViewModel.kt
+│   │   │   ├── ☕ ResultScreen.kt
+│   │   │   ├── ☕ ResultViewModel.kt
+│   │   │   ├── ☕ WordPracticeScreen.kt
+│   │   │   └── ☕ WordSelectionScreen.kt
+│   │   ├── 📁 settings
+│   │   │   ├── ☕ SettingsScreen.kt
+│   │   │   └── ☕ SettingsViewModel.kt
+│   │   ├── 📁 topic_managment
+│   │   │   ├── ☕ EditTopicScreen.kt
+│   │   │   ├── ☕ TopicManagementScreen.kt
+│   │   │   └── ☕ TopicViewModel.kt
+│   │   ├── 📁 translationScreen
+│   │   │   ├── ☕ TranslationScreen.kt
+│   │   │   └── ☕ TranslationViewModel.kt
+│   │   ├── ☕ HomeScreen.kt
+│   │   ├── ☕ IntroScreen.kt
+│   │   └── ☕ MainHomeScreen.kt
+│   ├── 🗂️ theme
+│   │   ├── ☕ Theme.kt
+│   │   └── ☕ Type.kt
+│   ├── ☕ AppContainer.kt
+│   └── ☕ ViewModelFactory.kt
+├── 🗂️ utils
+│   └── ☕ NotificationSettings.kt
+└── ☕ MainActivity.kt
+```
+
+---
+
+## ✨ Tính năng chính
+
+Dựa trên cấu trúc thư mục, các tính năng của ứng dụng bao gồm:
+
+- **Xác thực Người dùng (`/auth`)**
+
+  - Đăng ký tài khoản mới.
+  - Đăng nhập (Email/Password).
+  - Quên mật khẩu.
+
+- **Quản lý Từ vựng (`/topic_managment`)**
+
+  - Quản lý Chủ đề (Thư mục): Thêm, sửa, xóa.
+  - Quản lý Từ vựng: Thêm, sửa, xóa từ trong một chủ đề (bao gồm nghĩa, ví dụ).
+
+- **Ôn tập (`/regime`)**
+
+  - **Flashcard**: Lật thẻ, đánh dấu "Đã biết" / "Đang học".
+  - **Quiz (Trắc nghiệm)**: Hỗ trợ 3 dạng (Đúng/Sai, Tự luận, Chọn nhiều đáp án).
+  - **Lật thẻ (Giải trí)**: Trò chơi ghép cặp Từ - Nghĩa.
+
+- **Dịch thuật (`/translationScreen`)**
+
+  - Dịch từ/cụm từ trực tiếp trong ứng dụng (sử dụng Retrofit API).
+  - Lưu lịch sử các từ đã dịch (`TranslationHistoryEntity`).
+
+- **Đồng bộ hóa & Sao lưu (`/cloud`, `/backup`)**
+
+  - Tự động đồng bộ hóa Chủ đề và Từ vựng lên Firebase Firestore (`CloudTopicRepository`).
+  - Đồng bộ hóa Lịch sử học tập (`CloudStudyResultRepository`).
+  - Cung cấp màn hình sao lưu/khôi phục dữ liệu thủ công.
+
+- **Lịch sử & Thông báo (`/history`, `/notification`)**
+
+  - Theo dõi lịch sử và tiến độ học tập.
+  - Lưu và hiển thị thông báo (từ `FCM` và `WorkManager`) trong một màn hình chuyên dụng (`NotificationEntity`).
+
+- **Cài đặt (`/settings`)**
+  - Cấu hình thông báo nhắc nhở cục bộ (WorkManager).
+  - Quản lý tài khoản và cài đặt đồng bộ hóa.
+
+---
+
+## 🚀 Công nghệ & Thư viện
+
+| Hạng mục                  | Công nghệ / Thư viện                     | Vai trò                                             |
+| :------------------------ | :--------------------------------------- | :-------------------------------------------------- |
+| **Kiến trúc**             | Clean Architecture, MVVM, Repository     | Tách biệt logic, dễ bảo trì                         |
+| **UI**                    | Jetpack Compose (Material 3)             | Xây dựng giao diện người dùng                       |
+| **Điều hướng**            | Navigation Compose                       | Điều hướng giữa các màn hình                        |
+| **Lập trình bất đồng bộ** | Kotlin Coroutines, Flow                  | Xử lý tác vụ nền và luồng dữ liệu                   |
+| **Database (Local)**      | Room Database                            | Lưu trữ dữ liệu offline (từ vựng, lịch sử,...)      |
+| **Lưu trữ (Local)**       | DataStore Preferences                    | Lưu cài đặt của người dùng                          |
+| **Database (Cloud)**      | Firebase Firestore                       | Đồng bộ hóa dữ liệu đám mây                         |
+| **Xác thực**              | Firebase Authentication                  | Quản lý đăng nhập/đăng ký                           |
+| **Thông báo (Push)**      | Firebase Cloud Messaging (FCM)           | Nhận thông báo đẩy từ server                        |
+| **Thông báo (Local)**     | WorkManager                              | Lập lịch nhắc nhở học tập định kỳ                   |
+| **Network (API)**         | Retrofit & Gson                          | Gọi API dịch thuật                                  |
+| **DI Thủ công**           | `AppContainer.kt`, `ViewModelFactory.kt` | Cung cấp dependencies (Repositories) cho ViewModels |
+| **Build Tool**            | KSP (Kotlin Symbol Processing)           | Thay thế KAPT cho Room                              |
+
+---
+
+## 🗃️ Sơ đồ Cơ sở dữ liệu (Room DB)
+
+Cơ sở dữ liệu cục bộ (offline-first) được thiết kế để hỗ trợ cả khi không có mạng và đồng bộ với Firestore khi có kết nối.
+
+- **TopicEntity**: Lưu trữ thông tin chủ đề.
+- **WordEntity**: Lưu từ vựng (quan hệ 1-N với `TopicEntity`).
+- **StudyResultEntity**: Lưu kết quả các phiên ôn tập (Flashcard, Quiz, Lật thẻ).
+- **NotificationEntity**: Lưu lịch sử thông báo nhận được (từ FCM hoặc WorkManager).
+
+---
+
+## 🔄 Luồng dữ liệu (Data Flow)
+
+Sơ đồ dưới đây minh họa luồng Đăng nhập và Đồng bộ dữ liệu:
+
+1.  **Người dùng** nhập thông tin và nhấn Login tại `LoginScreen`.
+2.  `LoginScreen` gọi `AuthViewModel.login()`.
+3.  `AuthViewModel` gọi `IAuthRepository.signInWithEmail()`.
+4.  `AuthRepositoryImpl` sử dụng `FirebaseAuth` để xác thực.
+5.  Nếu thành công, `AuthViewModel` thông báo cho `MainHomeScreen`.
+6.  `MainHomeScreen` kích hoạt các ViewModel con (ví dụ: `TopicViewModel`).
+7.  `TopicViewModel` gọi `ITopicRepository.getAllTopics()`.
+8.  `TopicRepositoryImpl` (lớp triển khai) sẽ:
+    - **Trước tiên**, trả về dữ liệu ngay lập tức từ `TopicDao` (Room).
+    - **Sau đó**, kích hoạt `CloudTopicRepository` để lắng nghe thay đổi từ **Firestore**.
+    - Khi có dữ liệu mới từ Firestore, nó sẽ được cập nhật vào **Room**, và `Flow` sẽ tự động phát (emit) dữ liệu mới này lên `TopicViewModel` và UI.
+
+---
+
+## 🛠️ Cài đặt & Chạy dự án
+
+### Yêu cầu
+
+- Android Studio (Iguana 🦎 trở lên).
+- JDK 17.
+- Android SDK 34 (minSdk 24).
+- **Quan trọng:** Cần có file `google-services.json` (từ dự án Firebase của bạn) đặt trong thư mục `app/` để các tính năng Authentication, Firestore, và FCM hoạt động.
+
+### Các bước chạy
+
+1.  Clone dự án về máy.
+2.  Thêm file `google-services.json` của bạn vào `app/`.
+3.  Mở dự án bằng Android Studio và đợi Gradle đồng bộ.
+4.  Chọn thiết bị (máy ảo hoặc thiết bị thật).
+5.  Nhấn **Run 'app'**.
+
+### Build APK
+
+Sử dụng terminal tại thư mục gốc dự án:
+
 ```powershell
+# Windows
 .\gradlew.bat :app:assembleDebug
+
+# macOS / Linux
+./gradlew :app:assembleDebug
 ```
-- APK đầu ra: `app/build/outputs/apk/debug/app-debug.apk`
-
-### Kiểm thử (nếu cần)
-```powershell
-# Unit test JVM
-.\gradlew.bat testDebugUnitTest
-
-# Instrumentation test trên thiết bị/emulator
-.\gradlew.bat connectedDebugAndroidTest
-```
-
-## Quyền & Thông báo
-- **Quyền**:
-    - `INTERNET`: Kết nối mạng (sẵn sàng cho API dịch từ vựng)
-    - `POST_NOTIFICATIONS`: Thông báo (Android 13+ yêu cầu runtime permission)
-- `MainActivity` sẽ tự động xin quyền thông báo với Android 13+
-- Nhắc nhở sử dụng WorkManager với periodic work; người dùng có thể bật/tắt và điều chỉnh chu kỳ (mặc định 4 giờ) trong màn hình Cài đặt
-
-## Database & Migration
-- **Room Database**: Sử dụng Room để lưu trữ dữ liệu topics, words, và study results
-- **Auto Migration**: Tự động migrate dữ liệu từ file JSON cũ (`topics.json`) sang Room Database khi:
-    - Database rỗng (lần đầu chạy app)
-    - File JSON cũ tồn tại trong `filesDir`
-- **Fallback**: Nếu không có file JSON cũ, app sẽ tạo dữ liệu mặc định (chủ đề "Chào mừng đến với EzWordMaster")
-- **Schema**: Database version 1, sử dụng `fallbackToDestructiveMigration()` (có thể thêm migration strategy sau)
-
-## Thông tin thêm
-- [Danh sách thành viên](https://docs.google.com/spreadsheets/d/14NwdO01yHIBayl9eDs9CH-itm1TKDcyRPgflDGvMZtg/edit?usp=sharing)
-- [Báo cáo](https://docs.google.com/document/d/17lVkj18YpAYfzYJi3OHWqpUKfqfTEoviIN8zyFwSTqg/edit?usp=sharing)
-- [Design](https://www.figma.com/design/A6rw39IXQP0aWaGc4lGeKg/EzWordMaster?node-id=0-1&t=S1B6jdlF2ENFs4sG-1)
