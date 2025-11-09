@@ -251,7 +251,7 @@ Cơ sở dữ liệu cục bộ (offline-first) được thiết kế để hỗ
 
 ### Yêu cầu
 
-- Android Studio (Iguana 🦎 trở lên).
+- Android Studio.
 - JDK 17.
 - Android SDK 34 (minSdk 24).
 - **Quan trọng:** Cần có file `google-services.json` (từ dự án Firebase của bạn) đặt trong thư mục `app/` để các tính năng Authentication, Firestore, và FCM hoạt động.
