@@ -1,6 +1,6 @@
 # EzWordMaster
 
-![EzWordMaster Logo](app/src/main/res/drawable/logo.png)
+![EzWordMaster Logo](Avatar.png)
 
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.9.23-blue?logo=kotlin)](https://kotlinlang.org)
 [![JDK Version](https://img.shields.io/badge/JDK-17-purple?logo=openjdk)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
@@ -13,14 +13,10 @@
 
 Nhờ tích hợp Firebase, ứng dụng hỗ trợ **xác thực người dùng**, **đồng bộ hóa dữ liệu** (chủ đề, từ vựng) lên đám mây, và nhận **thông báo đẩy (push notifications)**.
 
----
-
 ## 🔍 Thông tin thêm
 
 - [Báo cáo](#)
 - [Design](https://www.figma.com/design/A6rw39IXQP0aWaGc4lGeKg/EzWordMaster?node-id=384-453&t=wp5tAfkBSJnFsPdv-1)
-
----
 
 ## 🏛️ Sơ đồ Kiến trúc (Architecture)
 
@@ -33,8 +29,6 @@ Dự án tuân thủ theo mô hình **Clean Architecture** (UI, Domain, Data) k�
   - **Cloud**: Firebase Firestore (đồng bộ từ vựng).
   - **Remote**: Retrofit API (dịch thuật).
   - **FCM**: Firebase Cloud Messaging (nhận thông báo).
-
----
 
 ## 🗂️ Cấu trúc cây thư mục
 
@@ -181,8 +175,6 @@ Dự án tuân thủ theo mô hình **Clean Architecture** (UI, Domain, Data) k�
 └── ☕ MainActivity.kt
 ```
 
----
-
 ## ✨ Tính năng chính
 
 Dựa trên cấu trúc thư mục, các tính năng của ứng dụng bao gồm:
@@ -224,8 +216,6 @@ Dựa trên cấu trúc thư mục, các tính năng của ứng dụng bao gồ
   - Cấu hình thông báo nhắc nhở cục bộ (WorkManager).
   - Quản lý tài khoản và cài đặt đồng bộ hóa.
 
----
-
 ## 🚀 Công nghệ & Thư viện
 
 | Hạng mục                  | Công nghệ / Thư viện                     | Vai trò                                             |
@@ -244,8 +234,6 @@ Dựa trên cấu trúc thư mục, các tính năng của ứng dụng bao gồ
 | **DI Thủ công**           | `AppContainer.kt`, `ViewModelFactory.kt` | Cung cấp dependencies (Repositories) cho ViewModels |
 | **Build Tool**            | KSP (Kotlin Symbol Processing)           | Thay thế KAPT cho Room                              |
 
----
-
 ## 🗃️ Sơ đồ Cơ sở dữ liệu (Room DB)
 
 Cơ sở dữ liệu cục bộ (offline-first) được thiết kế để hỗ trợ cả khi không có mạng và đồng bộ với Firestore khi có kết nối.
@@ -255,25 +243,9 @@ Cơ sở dữ liệu cục bộ (offline-first) được thiết kế để hỗ
 - **StudyResultEntity**: Lưu kết quả các phiên ôn tập (Flashcard, Quiz, Lật thẻ).
 - **NotificationEntity**: Lưu lịch sử thông báo nhận được (từ FCM hoặc WorkManager).
 
----
-
 ## 🔄 Luồng dữ liệu (Data Flow)
 
-Sơ đồ dưới đây minh họa luồng Đăng nhập và Đồng bộ dữ liệu:
-
-1.  **Người dùng** nhập thông tin và nhấn Login tại `LoginScreen`.
-2.  `LoginScreen` gọi `AuthViewModel.login()`.
-3.  `AuthViewModel` gọi `IAuthRepository.signInWithEmail()`.
-4.  `AuthRepositoryImpl` sử dụng `FirebaseAuth` để xác thực.
-5.  Nếu thành công, `AuthViewModel` thông báo cho `MainHomeScreen`.
-6.  `MainHomeScreen` kích hoạt các ViewModel con (ví dụ: `TopicViewModel`).
-7.  `TopicViewModel` gọi `ITopicRepository.getAllTopics()`.
-8.  `TopicRepositoryImpl` (lớp triển khai) sẽ:
-    - **Trước tiên**, trả về dữ liệu ngay lập tức từ `TopicDao` (Room).
-    - **Sau đó**, kích hoạt `CloudTopicRepository` để lắng nghe thay đổi từ **Firestore**.
-    - Khi có dữ liệu mới từ Firestore, nó sẽ được cập nhật vào **Room**, và `Flow` sẽ tự động phát (emit) dữ liệu mới này lên `TopicViewModel` và UI.
-
----
+<img src="SodoLuong.png">
 
 ## 🛠️ Cài đặt & Chạy dự án
 
